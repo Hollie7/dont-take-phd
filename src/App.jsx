@@ -6,8 +6,9 @@ import { PlayingScreen } from './screens/PlayingScreen';
 import { OfferScreen } from './screens/OfferScreen';
 import { RejectionScreen } from './screens/RejectionScreen';
 import { AdvisorModal } from './components/AdvisorModal';
+import { LanguageProvider } from './contexts/LanguageContext';
 
-function App() {
+function AppContent() {
   const {
     gameState,
     setGameState,
@@ -103,6 +104,14 @@ function App() {
     default:
       return <InitScreen onAdvisorGenerated={handleAdvisorGenerated} />;
   }
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
 }
 
 export default App;

@@ -50,3 +50,422 @@ body {
 .delay-300 {
   animation-delay: 1s;
 }
+
+/* 像素文字效果 */
+.pixel-text {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  image-rendering: pixelated;
+}
+
+/* 如果没有 Press Start 2P 字体，可以在 HTML head 中添加 */
+/* <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> */
+
+/* 径向渐变背景 */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+
+/* 西西弗斯整体动画 */
+.sisyphus-journey {
+  position: absolute;
+  animation: pushUpHill 8s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+@keyframes pushUpHill {
+  0% {
+    left: 50px;
+    bottom: 20px;
+  }
+  45% {
+    left: 350px;
+    bottom: 180px;
+  }
+  50% {
+    left: 350px;
+    bottom: 180px;
+  }
+  55% {
+    left: 350px;
+    bottom: 180px;
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 石头旋转 */
+.sisyphus-rock {
+  position: absolute;
+  left: -40px;
+  bottom: 0;
+  animation: rockRotate 8s linear infinite;
+}
+
+@keyframes rockRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(720deg);
+  }
+  100% {
+    transform: rotate(720deg);
+  }
+}
+
+/* 小人推的动作 */
+.sisyphus-person {
+  position: absolute;
+  left: -60px;
+  bottom: 0;
+}
+
+.arm-push {
+  animation: armPush 0.5s ease-in-out infinite;
+}
+
+@keyframes armPush {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+.leg-left, .leg-right {
+  animation: legWalk 0.6s ease-in-out infinite;
+}
+
+.leg-left {
+  animation-delay: 0s;
+}
+
+.leg-right {
+  animation-delay: 0.3s;
+}
+
+@keyframes legWalk {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* 石头滚落 */
+.rock-rolling {
+  position: absolute;
+  opacity: 0;
+  animation: rollDown 3s ease-in infinite;
+  animation-delay: 4s;
+}
+
+@keyframes rollDown {
+  0% {
+    left: 350px;
+    bottom: 180px;
+    opacity: 0;
+    transform: rotate(0deg);
+  }
+  5% {
+    opacity: 1;
+  }
+  100% {
+    left: 50px;
+    bottom: 20px;
+    opacity: 1;
+    transform: rotate(-1080deg);
+  }
+}
+
+/* 小人返回 */
+.person-return {
+  position: absolute;
+  opacity: 0;
+  animation: walkBack 3s ease-out infinite;
+  animation-delay: 4.5s;
+}
+
+@keyframes walkBack {
+  0% {
+    left: 350px;
+    bottom: 180px;
+    opacity: 0;
+    transform: scaleX(-1);
+  }
+  5% {
+    opacity: 1;
+  }
+  100% {
+    left: 50px;
+    bottom: 20px;
+    opacity: 1;
+    transform: scaleX(-1);
+  }
+}
+
+
+
+/* 凌乱的书籍堆叠动画 */
+@keyframes stackBookMessy {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.8) rotate(var(--initial-rotation, 0deg));
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.1) rotate(calc(var(--initial-rotation, 0deg) * 1.5));
+  }
+  25% {
+    transform: translateY(5px) scale(0.95) rotate(calc(var(--initial-rotation, 0deg) * 0.8));
+  }
+  35% {
+    transform: translateY(0) scale(1) rotate(var(--initial-rotation, 0deg));
+  }
+  55% {
+    transform: translateY(0) scale(1) rotate(var(--initial-rotation, 0deg));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(var(--initial-rotation, 0deg));
+  }
+}
+
+.book-stack-messy {
+  animation: stackBookMessy 14s ease-out forwards;
+  opacity: 0;
+}
+
+/* 塔整体摇晃 */
+@keyframes towerWobble {
+  0%, 10% {
+    transform: rotate(0deg);
+  }
+  12% {
+    transform: rotate(-1deg);
+  }
+  14% {
+    transform: rotate(1.5deg);
+  }
+  16% {
+    transform: rotate(-2deg);
+  }
+  18% {
+    transform: rotate(2deg);
+  }
+  20% {
+    transform: rotate(-1.5deg);
+  }
+  22% {
+    transform: rotate(1deg);
+  }
+  24% {
+    transform: rotate(-0.5deg);
+  }
+  26%, 100% {
+    transform: rotate(0deg);
+  }
+}
+
+.tower-wobble {
+  transform-origin: bottom center;
+  animation: towerWobble 14s ease-in-out forwards;
+}
+
+/* 凌乱的崩塌动画 */
+@keyframes bookFallMessy {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  2% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--fall-x, 0), 400px) rotate(var(--fall-rotation, 360deg)) scale(0.6);
+  }
+}
+
+.book-fall-messy {
+  animation: bookFallMessy 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+/* 灰尘粒子 */
+@keyframes dustRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.5);
+  }
+}
+
+.dust-particle {
+  position: absolute;
+  bottom: 0;
+  animation: dustRise 1.5s ease-out forwards;
+  opacity: 0;
+}
+
+
+/* 霓虹文字效果 */
+.neon-text-pink {
+  color: #ff00ff;
+  text-shadow: 
+    0 0 5px #ff00ff,
+    0 0 10px #ff00ff,
+    0 0 20px #ff00ff,
+    0 0 40px #ff00ff;
+}
+
+.neon-text-cyan {
+  color: #00ffff;
+  text-shadow: 
+    0 0 5px #00ffff,
+    0 0 10px #00ffff,
+    0 0 20px #00ffff;
+}
+
+/* 霓虹发光效果 */
+.neon-glow-cyan {
+  filter: drop-shadow(0 0 5px #00ffff) drop-shadow(0 0 10px #00ffff);
+}
+
+.neon-glow-pink {
+  filter: drop-shadow(0 0 5px #ff00ff) drop-shadow(0 0 10px #ff00ff);
+}
+
+.neon-glow-yellow {
+  filter: drop-shadow(0 0 5px #ffff00) drop-shadow(0 0 10px #ffff00);
+}
+
+/* 掉落文字动画 */
+@keyframes arcadeTextFall {
+  0% {
+    top: -10%;
+    opacity: 0;
+    transform: rotate(-10deg) scale(0.5);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 110%;
+    opacity: 0;
+    transform: rotate(10deg) scale(1.2);
+  }
+}
+
+.arcade-text-fall {
+  animation: arcadeTextFall 12s linear infinite;
+}
+
+/* 学生奔跑 */
+@keyframes studentRun {
+  0% {
+    left: -5%;
+  }
+  100% {
+    left: 105%;
+  }
+}
+
+.student-running {
+  position: absolute;
+  bottom: 8px;
+  animation: studentRun 8s linear infinite;
+}
+
+/* 跑步动作 - 腿部 */
+@keyframes legRun {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-2px) scaleY(1.1);
+  }
+}
+
+.leg-run-1 {
+  animation: legRun 0.3s ease-in-out infinite;
+}
+
+.leg-run-2 {
+  animation: legRun 0.3s ease-in-out infinite;
+  animation-delay: 0.15s;
+}
+
+/* DDL 追逐 */
+@keyframes deadlineChase {
+  0% {
+    left: -10%;
+  }
+  100% {
+    left: 105%;
+  }
+}
+
+.deadline-chasing {
+  position: absolute;
+  bottom: 8px;
+  animation: deadlineChase 8s linear infinite;
+  animation-delay: 0.5s;
+}
+
+/* 论文追逐 */
+@keyframes paperChase {
+  0% {
+    left: -15%;
+  }
+  100% {
+    left: 105%;
+  }
+}
+
+.paper-chasing {
+  position: absolute;
+  bottom: 8px;
+  animation: paperChase 8s linear infinite;
+  animation-delay: 1s;
+}
+
+/* 能量条消耗 */
+@keyframes energyDrain {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 10%;
+  }
+}
+
+.energy-bar-drain {
+  animation: energyDrain 10s ease-in infinite;
+}
+
+/* 警告文字闪烁 */
+@keyframes criticalBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.energy-text-blink {
+  animation: criticalBlink 0.8s ease-in-out infinite;
+}

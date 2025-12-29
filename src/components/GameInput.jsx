@@ -1,7 +1,10 @@
 import React from 'react';
 import { Send } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const GameInput = ({ value, onChange, onSend, disabled }) => {
+  const { t } = useLanguage();
+  
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -16,7 +19,7 @@ export const GameInput = ({ value, onChange, onSend, disabled }) => {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="输入回答... (Enter发送)"
+          placeholder={t('gameInput.placeholder')}
           disabled={disabled}
           className="flex-1 bg-indigo-950 border-2 border-indigo-500 text-white p-3 pixel-corners resize-none focus:outline-none focus:border-indigo-400 disabled:opacity-50"
           rows="3"
@@ -30,7 +33,7 @@ export const GameInput = ({ value, onChange, onSend, disabled }) => {
         </button>
       </div>
       <p className="text-indigo-400 text-xs mt-2">
-        💡 观察导师表情随满意度变化
+        {t('gameInput.hint')}
       </p>
     </div>
   );

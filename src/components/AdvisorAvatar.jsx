@@ -1,7 +1,7 @@
 import React from 'react';
 import { getAdvisorImage } from '../config/images';
 
-export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md' }) => {
+export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gender = 'female' }) => {
   const sizeClasses = {
     sm: 'w-16 h-16',
     md: 'w-20 h-20',
@@ -23,7 +23,7 @@ export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md' }) =
         onClick={onClick}
       >
         <img 
-          src={getAdvisorImage(emotion, isProcessing)} 
+          src={getAdvisorImage(emotion, isProcessing, gender)} 
           alt="导师" 
           className="w-full h-full object-contain transition-all duration-500"
           onError={(e) => {
