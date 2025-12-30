@@ -7,10 +7,10 @@ export const ADVISOR_IMAGES = {
     neutral: 'https://i.ibb.co/xKhQXGyw/Chat-GPT-Image-Dec-30-2025-09-05-49-PM.png'
   },
   female: {
-    happy: 'https://i.ibb.co/20GdfXFn/Chat-GPT-Image-Dec-30-2025-09-23-43-PM.png',
-    thinking: 'https://i.ibb.co/sdVMFbQ7/Chat-GPT-Image-Dec-30-2025-09-23-45-PM.png',
-    sad: 'https://i.ibb.co/tTyvw7W0/Chat-GPT-Image-Dec-30-2025-09-23-47-PM.png',
-    neutral: 'https://i.ibb.co/20GdfXFn/Chat-GPT-Image-Dec-30-2025-09-23-43-PM.png'
+    happy: 'https://i.ibb.co/jPXkDcVC/Chat-GPT-Image-Dec-30-2025-09-23-43-PM.png',
+    thinking: 'https://i.ibb.co/1Gw24bD9/Chat-GPT-Image-Dec-30-2025-09-23-45-PM.png',
+    sad: 'https://i.ibb.co/tMwZXrm2/Chat-GPT-Image-Dec-30-2025-09-23-47-PM.png',
+    neutral: 'https://i.ibb.co/jPXkDcVC/Chat-GPT-Image-Dec-30-2025-09-23-43-PM.png'
   }
 };
 

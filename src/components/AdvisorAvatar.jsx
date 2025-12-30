@@ -25,7 +25,7 @@ export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gen
         <img 
           src={getAdvisorImage(emotion, isProcessing, gender)} 
           alt="导师" 
-          className="w-full h-full object-contain transition-all duration-500"
+          className="w-full h-full object-cover transition-all duration-500"
           onError={(e) => {
             e.target.style.display = 'none';
             e.target.nextSibling.style.display = 'block';
