@@ -71,16 +71,20 @@ export const translations = {
 
     // 介绍屏幕
     intro: {
+      meetAdvisor: "Meet Your Advisor",
+      subtitle: "Get to know your potential PhD advisor",
       viewDetails: "View Advisor Details",
       gameRules: "📚 Game Rules",
       rule1: "You will have an in-depth conversation with {name}",
       rule2: "Advisor's expression changes with satisfaction (😊 → 🤔 → 😔)",
       rule3: "Your answers will affect the advisor's satisfaction",
       rule4: "Finally get an offer or be rejected",
+      advisorTraits: "Advisor Traits",
       advisorPersonality: "Personality:",
       researchField: "Research Field:",
       changeAdvisor: "Change Advisor",
       startInterview: "Start Interview",
+      readyPrompt: "▶ Press start when ready",
       initialMessage: "Hello, I'm {name}. Tell me, why do you want to pursue a PhD?"
     },
 
@@ -135,6 +139,7 @@ export const translations = {
       point3: "思考PhD是否真的适合你",
       footer: "INSERT COIN TO START"
     },
+
     input: {
       title: "DESCRIBE_YOUR_ADVISOR.exe",
       placeholder: `// 输入导师描述...
@@ -196,16 +201,20 @@ export const translations = {
 
      // 介绍屏幕
     intro: {
+      meetAdvisor: "认识你的导师",
+      subtitle: "了解你的潜在博士导师",
       viewDetails: "查看导师详细信息",
       gameRules: "📚 游戏说明",
       rule1: "你将与 {name} 进行深入对话",
       rule2: "导师表情会随着满意度实时变化（😊 → 🤔 → 😔）",
       rule3: "你的回答将影响导师的满意度",
       rule4: "最终获得offer或被拒绝",
+      advisorTraits: "导师特征",
       advisorPersonality: "导师性格：",
       researchField: "研究领域：",
       changeAdvisor: "换导师",
       startInterview: "开始面试",
+      readyPrompt: "▶ 准备好了就开始吧",
       initialMessage: "你好，我是{name}。请告诉我，你为什么想要攻读PhD？"
     },
 

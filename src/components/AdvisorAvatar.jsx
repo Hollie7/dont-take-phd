@@ -3,10 +3,10 @@ import { getAdvisorImage } from '../config/images';
 
 export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gender = 'female' }) => {
   const sizeClasses = {
-    sm: 'w-16 h-16',
-    md: 'w-20 h-20',
-    lg: 'w-32 h-32',
-    xl: 'w-40 h-40'
+    sm: 'w-12 h-12',
+    md: 'w-16 h-16',
+    lg: 'w-24 h-24',
+    xl: 'w-32 h-32'
   };
 
   const emojiMap = {
@@ -19,7 +19,7 @@ export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gen
   return (
     <div className="relative">
       <div 
-        className={`${sizeClasses[size]} border-4 border-indigo-500 pixel-corners overflow-hidden bg-indigo-700 flex items-center justify-center ${onClick ? 'cursor-pointer hover:border-indigo-400' : ''} transition-all`}
+        className={`${sizeClasses[size]} border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center ${onClick ? 'cursor-pointer hover:border-gray-300' : ''} transition-all shadow-sm`}
         onClick={onClick}
       >
         <img 
@@ -31,17 +31,17 @@ export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gen
             e.target.nextSibling.style.display = 'block';
           }}
         />
-        <div style={{ display: 'none' }} className="text-4xl">
+        <div style={{ display: 'none' }} className="text-3xl">
           {isProcessing ? '🤔' : emojiMap[emotion] || '😐'}
         </div>
         {isProcessing && (
-          <div className="absolute inset-0 bg-indigo-900 bg-opacity-60 flex items-center justify-center">
-            <div className="w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
+          <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center backdrop-blur-sm">
+            <div className="w-3 h-3 bg-gray-900 rounded-full animate-ping"></div>
           </div>
         )}
       </div>
       {size === 'md' && (
-        <div className="absolute -bottom-2 -right-2 bg-indigo-900 border-2 border-indigo-600 pixel-corners px-2 py-1 text-xs text-white">
+        <div className="absolute -bottom-1 -right-1 bg-white border border-gray-200 rounded-lg px-2 py-0.5 text-sm shadow-sm">
           {isProcessing ? '🤔' : emojiMap[emotion] || '😐'}
         </div>
       )}

@@ -14,59 +14,49 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  color: #37352f;
 }
 
-.pixel-corners {
-  border-radius: 0;
-  image-rendering: pixelated;
+/* Notion 风格的文字淡入淡出 */
+@keyframes textFadeFall {
+  0% {
+    top: -5%;
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  10% {
+    opacity: 0.15;
+  }
+  90% {
+    opacity: 0.15;
+  }
+  100% {
+    top: 105%;
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
 
-.pixel-text {
-  font-family: 'Courier New', monospace;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+.text-fade-fall {
+  animation: textFadeFall 15s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.4; }
+/* 柔和的进度条动画 */
+@keyframes progressDrain {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 15%;
+  }
 }
 
-.animate-pulse {
-  animation: pulse 3s ease-in-out infinite;
+.progress-drain {
+  animation: progressDrain 12s ease-in-out infinite;
 }
 
-.delay-100 {
-  animation-delay: 0.3s;
-}
-
-.delay-150 {
-  animation-delay: 0.5s;
-}
-
-.delay-200 {
-  animation-delay: 0.7s;
-}
-
-.delay-300 {
-  animation-delay: 1s;
-}
-
-/* 像素文字效果 */
-.pixel-text {
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  image-rendering: pixelated;
-}
-
-/* 如果没有 Press Start 2P 字体，可以在 HTML head 中添加 */
-/* <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> */
-
-/* 径向渐变背景 */
-.bg-gradient-radial {
-  background: radial-gradient(circle, var(--tw-gradient-stops));
-}
-
-
-/* 西西弗斯整体动画 */
+/* 西西弗斯动画 - 保留但简化 */
 .sisyphus-journey {
   position: absolute;
   animation: pushUpHill 8s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
@@ -98,7 +88,6 @@ body {
   }
 }
 
-/* 石头旋转 */
 .sisyphus-rock {
   position: absolute;
   left: -40px;
@@ -118,7 +107,6 @@ body {
   }
 }
 
-/* 小人推的动作 */
 .sisyphus-person {
   position: absolute;
   left: -60px;
@@ -159,7 +147,6 @@ body {
   }
 }
 
-/* 石头滚落 */
 .rock-rolling {
   position: absolute;
   opacity: 0;
@@ -185,7 +172,6 @@ body {
   }
 }
 
-/* 小人返回 */
 .person-return {
   position: absolute;
   opacity: 0;
@@ -211,9 +197,7 @@ body {
   }
 }
 
-
-
-/* 凌乱的书籍堆叠动画 */
+/* 书塔动画 - 保留 */
 @keyframes stackBookMessy {
   0% {
     opacity: 0;
@@ -243,7 +227,6 @@ body {
   opacity: 0;
 }
 
-/* 塔整体摇晃 */
 @keyframes towerWobble {
   0%, 10% {
     transform: rotate(0deg);
@@ -279,7 +262,6 @@ body {
   animation: towerWobble 14s ease-in-out forwards;
 }
 
-/* 凌乱的崩塌动画 */
 @keyframes bookFallMessy {
   0% {
     opacity: 0;
@@ -299,7 +281,6 @@ body {
   opacity: 0;
 }
 
-/* 灰尘粒子 */
 @keyframes dustRise {
   0% {
     opacity: 0;
@@ -321,151 +302,36 @@ body {
   opacity: 0;
 }
 
-
-/* 霓虹文字效果 */
-.neon-text-pink {
-  color: #ff00ff;
-  text-shadow: 
-    0 0 5px #ff00ff,
-    0 0 10px #ff00ff,
-    0 0 20px #ff00ff,
-    0 0 40px #ff00ff;
+/* 自定义滚动条 - Notion 风格 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.neon-text-cyan {
-  color: #00ffff;
-  text-shadow: 
-    0 0 5px #00ffff,
-    0 0 10px #00ffff,
-    0 0 20px #00ffff;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* 霓虹发光效果 */
-.neon-glow-cyan {
-  filter: drop-shadow(0 0 5px #00ffff) drop-shadow(0 0 10px #00ffff);
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
 }
 
-.neon-glow-pink {
-  filter: drop-shadow(0 0 5px #ff00ff) drop-shadow(0 0 10px #ff00ff);
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
-.neon-glow-yellow {
-  filter: drop-shadow(0 0 5px #ffff00) drop-shadow(0 0 10px #ffff00);
+/* 选中文本样式 */
+::selection {
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
 }
 
-/* 掉落文字动画 */
-@keyframes arcadeTextFall {
-  0% {
-    top: -10%;
-    opacity: 0;
-    transform: rotate(-10deg) scale(0.5);
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    top: 110%;
-    opacity: 0;
-    transform: rotate(10deg) scale(1.2);
-  }
+/* 平滑过渡 */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.arcade-text-fall {
-  animation: arcadeTextFall 12s linear infinite;
-}
-
-/* 学生奔跑 */
-@keyframes studentRun {
-  0% {
-    left: -5%;
-  }
-  100% {
-    left: 105%;
-  }
-}
-
-.student-running {
-  position: absolute;
-  bottom: 8px;
-  animation: studentRun 8s linear infinite;
-}
-
-/* 跑步动作 - 腿部 */
-@keyframes legRun {
-  0%, 100% {
-    transform: translateY(0) scaleY(1);
-  }
-  50% {
-    transform: translateY(-2px) scaleY(1.1);
-  }
-}
-
-.leg-run-1 {
-  animation: legRun 0.3s ease-in-out infinite;
-}
-
-.leg-run-2 {
-  animation: legRun 0.3s ease-in-out infinite;
-  animation-delay: 0.15s;
-}
-
-/* DDL 追逐 */
-@keyframes deadlineChase {
-  0% {
-    left: -10%;
-  }
-  100% {
-    left: 105%;
-  }
-}
-
-.deadline-chasing {
-  position: absolute;
-  bottom: 8px;
-  animation: deadlineChase 8s linear infinite;
-  animation-delay: 0.5s;
-}
-
-/* 论文追逐 */
-@keyframes paperChase {
-  0% {
-    left: -15%;
-  }
-  100% {
-    left: 105%;
-  }
-}
-
-.paper-chasing {
-  position: absolute;
-  bottom: 8px;
-  animation: paperChase 8s linear infinite;
-  animation-delay: 1s;
-}
-
-/* 能量条消耗 */
-@keyframes energyDrain {
-  0% {
-    width: 100%;
-  }
-  100% {
-    width: 10%;
-  }
-}
-
-.energy-bar-drain {
-  animation: energyDrain 10s ease-in infinite;
-}
-
-/* 警告文字闪烁 */
-@keyframes criticalBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.energy-text-blink {
-  animation: criticalBlink 0.8s ease-in-out infinite;
+button, a {
+  transition: all 0.2s ease;
 }

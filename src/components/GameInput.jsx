@@ -13,26 +13,26 @@ export const GameInput = ({ value, onChange, onSend, disabled }) => {
   };
 
   return (
-    <div className="bg-indigo-800 border-4 border-indigo-600 p-4 pixel-corners">
-      <div className="flex gap-2">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+      <div className="flex gap-3">
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder={t('gameInput.placeholder')}
           disabled={disabled}
-          className="flex-1 bg-indigo-950 border-2 border-indigo-500 text-white p-3 pixel-corners resize-none focus:outline-none focus:border-indigo-400 disabled:opacity-50"
+          className="flex-1 bg-gray-50 border border-gray-200 text-gray-900 px-4 py-3 rounded-xl resize-none focus:outline-none focus:border-gray-900 disabled:opacity-50 transition-colors text-sm leading-relaxed"
           rows="3"
         />
         <button
           onClick={onSend}
           disabled={!value.trim() || disabled}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 border-2 border-blue-800 pixel-corners disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="bg-gray-900 hover:bg-gray-800 text-white px-6 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center"
         >
           <Send className="w-5 h-5" />
         </button>
       </div>
-      <p className="text-indigo-400 text-xs mt-2">
+      <p className="text-gray-400 text-xs mt-3">
         {t('gameInput.hint')}
       </p>
     </div>
