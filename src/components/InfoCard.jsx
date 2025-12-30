@@ -6,7 +6,7 @@ export const InfoCard = () => {
   const { t } = useLanguage();
   
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       {/* 标题 */}
       <div className="flex items-center gap-3 mb-6 pb-5 border-b border-gray-100">
         <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -43,6 +43,13 @@ export const InfoCard = () => {
       <div className="mt-6 pt-5 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-500 font-medium">
           {t('gameInfo.footer')}
+        </p>
+      </div>
+
+      {/* 提示信息 */}
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <p className="text-xs text-gray-500 leading-relaxed">
+          {t('gameInfo.tip')}
         </p>
       </div>
     </div>

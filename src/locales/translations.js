@@ -8,19 +8,27 @@ export const translations = {
       point1: "Understand what advisors care about",
       point2: "Test your genuine research interest",
       point3: "Think if PhD is right for you",
-      footer: "INSERT COIN TO START"
+      footer: "INSERT COIN TO START",
+      tip: "💡 Tip: If generation fails, please try again later. Network fluctuations may affect generation speed."
     },
-    input: {
-      title: "DESCRIBE_YOUR_ADVISOR.exe",
-      placeholder: `// Enter advisor description...
+
+   input: {
+    title: "DESCRIBE_YOUR_ADVISOR.exe",
+    subtitle: "Enter a description or paste the advisor's homepage URL",
+    modeText: "📝 Text Description",
+    modeUrl: "🔗 Homepage URL",
+    placeholder: `// Enter advisor description...
 // Example: Young AI professor, pushy but nice
 // Or: Theoretical scholar, hands-off style`,
-      charCount: "[{count}/500]",
-      button: "▶ START INTERVIEW",
-      buttonGenerating: "GENERATING...",
-      statusReady: "READY",
-      statusOnline: "ONLINE"
-    },
+    urlPlaceholder: "https://example.edu/~professor",
+    urlExample: "Example",
+    charCount: "[{count}/500]",
+    button: "▶ START INTERVIEW",
+    buttonGenerating: "GENERATING...",
+    statusReady: "READY",
+    statusOnline: "ONLINE"
+  },
+
     footer: "▶ PRESS START TO BEGIN YOUR JOURNEY ◀",
     
     // 动画文字
@@ -124,7 +132,10 @@ export const translations = {
     // 错误信息
     errors: {
       generateFailed: "Failed to generate advisor profile. Please try again.",
-      networkError: "Network error. Please check your connection."
+      networkError: "Network error. Please check your connection.",
+      urlRequired: "Please enter a URL",
+      invalidUrl: "Invalid URL format. Please enter a valid URL.",
+      descriptionRequired: "Please enter a description"
     }
   },
 
@@ -137,20 +148,27 @@ export const translations = {
       point1: "了解导师会关心什么问题",
       point2: "检验你对研究的真实兴趣",
       point3: "思考PhD是否真的适合你",
-      footer: "INSERT COIN TO START"
+      footer: "INSERT COIN TO START",
+      tip: "💡 提示：如果生成失败，请稍后重试。网络波动可能影响生成速度。"
     },
 
-    input: {
+   input: {
       title: "DESCRIBE_YOUR_ADVISOR.exe",
+      subtitle: "输入描述或粘贴导师的个人主页链接",
+      modeText: "📝 文字描述",
+      modeUrl: "🔗 主页链接",
       placeholder: `// 输入导师描述...
-// 例如：研究AI的年轻教授，push但nice
-// 或者：做理论的老学者，放养型`,
+  // 例如：研究AI的年轻教授，push但nice
+  // 或者：做理论的老学者，放养型`,
+      urlPlaceholder: "https://example.edu/~professor",
+      urlExample: "示例",
       charCount: "[{count}/500]",
       button: "▶ START INTERVIEW",
       buttonGenerating: "生成中...",
       statusReady: "READY",
       statusOnline: "ONLINE"
     },
+
     footer: "▶ PRESS START TO BEGIN YOUR JOURNEY ◀",
 
     // 动画文字
@@ -253,7 +271,10 @@ export const translations = {
     // 错误信息
     errors: {
       generateFailed: "生成导师档案失败，请重试",
-      networkError: "网络错误，请检查连接"
+      networkError: "网络错误，请检查连接",
+      urlRequired: "请输入URL",
+      invalidUrl: "URL格式无效，请输入有效的URL",
+      descriptionRequired: "请输入描述"
     }
   }
 };

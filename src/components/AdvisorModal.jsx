@@ -43,11 +43,11 @@ export const AdvisorModal = ({ advisorProfile, currentEmotion, isProcessing, onC
               <p className="text-gray-600 mb-4 text-sm">
                 {advisorProfile.title} · {advisorProfile.institution}
               </p>
-              <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+              {/* <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
                 <p className="text-gray-700 text-sm italic">
                   💬 "{advisorProfile.famous_quote}"
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
