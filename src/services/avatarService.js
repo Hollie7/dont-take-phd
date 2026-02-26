@@ -1,10 +1,6 @@
 // Avatar generation service
-// Converts a real photo into a Notion-style cartoon avatar using OpenAI gpt-image-1.
-
-const AVATAR_STYLE_PROMPT =
-  "Convert the first image (the photo) into the illustration style shown in the second image (the style reference). " +
-  "Preserve the person's facial features and likeness. " +
-  "Output: minimalist black-and-white vector portrait, flat design, clean bold outlines, no shading, plain white background.";
+// Converts a real photo into a Notion-style cartoon avatar via /api/avatar (serverless).
+// Images are sent as base64 JSON so the OpenAI key never reaches the browser.
 
 // Public CORS proxy used as a fallback for cross-origin image fetches
 const CORS_PROXY = 'https://corsproxy.io/?url=';
@@ -12,30 +8,32 @@ const CORS_PROXY = 'https://corsproxy.io/?url=';
 // Fetches a URL and returns a Blob.
 // For external URLs, tries direct fetch first; falls back to CORS proxy if blocked.
 const fetchImageAsBlob = async (url) => {
-  // Same-origin URLs (e.g. /notion-style.png) don't need a proxy
   if (url.startsWith('/')) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.blob();
+    return res.blob();
   }
 
-  // Try direct fetch first
   try {
     const res = await fetch(url);
-    if (res.ok) return await res.blob();
+    if (res.ok) return res.blob();
   } catch {
     // CORS or network error — fall through to proxy
   }
 
-  // Fall back to CORS proxy
-  try {
-    const res = await fetch(CORS_PROXY + encodeURIComponent(url));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.blob();
-  } catch (err) {
-    throw new Error(`Photo is not publicly accessible (${err.message}). Using default avatar instead.`);
-  }
+  const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.blob();
 };
+
+// Converts a Blob to a base64 string (without the data URL prefix)
+const blobToBase64 = (blob) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 
 /**
  * Generates a Notion-style cartoon avatar from a photo URL.
@@ -43,39 +41,33 @@ const fetchImageAsBlob = async (url) => {
  * @returns {Promise<string>} base64 data URL of the generated avatar (data:image/png;base64,...)
  */
 export const generateCartoonAvatar = async (photoUrl) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key not configured');
-
-  // Fetch the source photo and the Notion-style reference image in parallel
+  // Fetch both images in the browser (no API key needed here)
   const [photoBlob, styleBlob] = await Promise.all([
     fetchImageAsBlob(photoUrl),
     fetchImageAsBlob('/notion-style.png'),
   ]);
 
-  const formData = new FormData();
-  // First image = content (the real photo), second = style reference
-  formData.append('image[]', photoBlob, 'photo.jpg');
-  formData.append('image[]', styleBlob, 'notion-style.png');
-  formData.append('prompt', AVATAR_STYLE_PROMPT);
-  formData.append('model', 'gpt-image-1');
-  formData.append('n', '1');
-  formData.append('size', '1024x1024');
-  formData.append('quality', 'medium');
+  const [photoBase64, styleBase64] = await Promise.all([
+    blobToBase64(photoBlob),
+    blobToBase64(styleBlob),
+  ]);
 
-  const response = await fetch('https://api.openai.com/v1/images/edits', {
+  const response = await fetch('/api/avatar', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: formData,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      photoBase64,
+      photoMimeType: photoBlob.type || 'image/jpeg',
+      styleBase64,
+      styleMimeType: styleBlob.type || 'image/png',
+    }),
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Avatar generation failed (${response.status}): ${errorText}`);
+    const err = await response.text();
+    throw new Error(`Avatar generation failed (${response.status}): ${err}`);
   }
 
   const data = await response.json();
-  const base64 = data.data[0].b64_json;
-  return `data:image/png;base64,${base64}`;
+  return `data:image/png;base64,${data.b64_json}`;
 };

@@ -1,40 +1,67 @@
 // AI API service
-// Uses OpenAI (gpt-4o-mini) for users in certain regions, DeepSeek (deepseek-chat) elsewhere.
+// All LLM calls go through /api/chat (Vercel serverless function) so API keys stay server-side.
 
-// Cached config so geo detection only runs once per session
-let cachedAPIConfig = null;
+// Helper: sleep for a given number of milliseconds
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const getAPIConfig = async () => {
-  if (cachedAPIConfig) return cachedAPIConfig;
+// Helper: fetch with automatic retry on timeout or server errors (429, 5xx)
+const fetchWithRetry = async (url, options, retries = 3, delayMs = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-  try {
-    const res = await fetch('https://ipapi.co/json/');
-    const data = await res.json();
-    const openAICountries = ['US', 'JP', 'KR', 'IN', 'SG'];
-    if (openAICountries.includes(data.country_code)) {
-      cachedAPIConfig = {
-        endpoint: 'https://api.openai.com/v1/chat/completions',
-        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-        model: 'gpt-4o-mini',
-      };
-    } else {
-      cachedAPIConfig = {
-        endpoint: 'https://api.deepseek.com/v1/chat/completions',
-        apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY,
-        model: 'deepseek-chat',
-      };
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        return response;
+      }
+
+      // Retry on rate limit or server errors
+      if (response.status === 429 || response.status >= 500) {
+        console.warn(`Attempt ${i + 1} failed with status ${response.status}, retrying...`);
+        if (i < retries - 1) {
+          await delay(delayMs * (i + 1));
+          continue;
+        }
+      }
+
+      throw new Error(`HTTP error! status: ${response.status}`);
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.warn(`Attempt ${i + 1} timeout, retrying...`);
+      } else {
+        console.warn(`Attempt ${i + 1} failed:`, error.message);
+      }
+
+      if (i === retries - 1) {
+        throw error;
+      }
+
+      await delay(delayMs * (i + 1));
     }
-  } catch {
-    // Fall back to DeepSeek if geo detection fails
-    cachedAPIConfig = {
-      endpoint: 'https://api.deepseek.com/v1/chat/completions',
-      apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY,
-      model: 'deepseek-chat',
-    };
   }
+};
 
-  console.log('API provider:', cachedAPIConfig.model);
-  return cachedAPIConfig;
+// Calls the serverless proxy — geo detection and API key selection happen server-side
+const callAI = async (messages, options = {}) => {
+  const response = await fetchWithRetry('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.max_tokens ?? 1000,
+      ...(options.response_format && { response_format: options.response_format }),
+    }),
+  }, 3, 2000);
+
+  return response.json();
 };
 
 // Returns the system prompt for advisor generation based on language
@@ -138,156 +165,34 @@ export const evaluateStudentResponse = async (
   turnCount,
   language = 'zh'
 ) => {
-  const { endpoint, apiKey, model } = await getAPIConfig();
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [
-        {
-          role: "system",
-          content: getEvaluationPrompt(advisorProfile, satisfaction, turnCount, language)
-        },
-        ...conversationHistory,
-        { role: "user", content: userMessage }
-      ],
-      temperature: 0.7,
-      max_tokens: 1000,
-      response_format: { type: 'json_object' }
-    })
-  });
+  const data = await callAI(
+    [
+      {
+        role: 'system',
+        content: getEvaluationPrompt(advisorProfile, satisfaction, turnCount, language)
+      },
+      ...conversationHistory,
+      { role: 'user', content: userMessage }
+    ],
+    { temperature: 0.7, max_tokens: 1000, response_format: { type: 'json_object' } }
+  );
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-  const responseText = data.choices?.[0]?.message?.content ?? "";
+  const responseText = data.choices?.[0]?.message?.content ?? '';
   const clean = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
   return JSON.parse(clean);
-};
-
-// Helper: sleep for a given number of milliseconds
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Helper: fetch with automatic retry on timeout or server errors (429, 5xx)
-const fetchWithRetry = async (url, options, retries = 3, delayMs = 1000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        return response;
-      }
-
-      // Retry on rate limit or server errors
-      if (response.status === 429 || response.status >= 500) {
-        console.warn(`Attempt ${i + 1} failed with status ${response.status}, retrying...`);
-        if (i < retries - 1) {
-          await delay(delayMs * (i + 1)); // exponential back-off
-          continue;
-        }
-      }
-
-      throw new Error(`HTTP error! status: ${response.status}`);
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.warn(`Attempt ${i + 1} timeout, retrying...`);
-      } else {
-        console.warn(`Attempt ${i + 1} failed:`, error.message);
-      }
-
-      if (i === retries - 1) {
-        throw error;
-      }
-
-      await delay(delayMs * (i + 1));
-    }
-  }
 };
 
 // Generates an advisor profile from a text description
 export const generateAdvisorProfile = async (description, language = 'zh') => {
   try {
-    const systemPrompt = language === 'zh'
-      ? `你是一个创意的导师档案生成器。基于用户提供的简短描述，生成一个详细的、有趣的导师档案。
-
-要求：
-1. 档案应该真实可信，但可以适当夸张有趣
-2. 性格特征要鲜明，有记忆点
-3. 研究兴趣要具体，不要太泛泛
-4. 必须返回有效的JSON格式
-
-返回格式示例：
-{
-  "name": "李明",
-  "title": "副教授",
-  "institution": "某某大学计算机学院",
-  "field": "人工智能与机器学习",
-  "research_interests": ["深度学习理论", "计算机视觉", "强化学习"],
-  "personality": "工作狂，凌晨2点还在回邮件。对学生要求严格但公平，喜欢和学生一起debug到深夜。",
-  "lab_style": "每周2次组会，鼓励失败，强调'fail fast, learn faster'。实验室氛围轻松但产出要求高。",
-  "expectations": ["有扎实的编程基础", "不怕困难，抗压能力强", "主动性强，能独立推进项目"],
-  "famous_quote": "PhD is not about being smart, it's about being persistent.",
-  "gender": "male"
-}`
-      : `You are a creative advisor profile generator. Based on a brief description, generate a detailed and interesting advisor profile.
-
-Requirements:
-1. Profile should be realistic but can be moderately exaggerated for interest
-2. Personality traits should be distinctive and memorable
-3. Research interests should be specific, not too general
-4. Must return valid JSON format
-
-Return format example:
-{
-  "name": "John Smith",
-  "title": "Associate Professor",
-  "institution": "Example University, CS Department",
-  "field": "Artificial Intelligence and Machine Learning",
-  "research_interests": ["Deep Learning Theory", "Computer Vision", "Reinforcement Learning"],
-  "personality": "Workaholic who replies to emails at 2 AM. Demanding but fair with students, enjoys debugging together late at night.",
-  "lab_style": "Two group meetings per week, encourages failure, emphasizes 'fail fast, learn faster'. Relaxed atmosphere but high output expectations.",
-  "expectations": ["Strong programming foundation", "Resilient and able to handle pressure", "Proactive and can drive projects independently"],
-  "famous_quote": "PhD is not about being smart, it's about being persistent.",
-  "gender": "male"
-}`;
-
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: description }
-    ];
-
     console.log('Calling API for profile generation...');
-    const { endpoint, apiKey, model } = await getAPIConfig();
-    const response = await fetchWithRetry(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: messages,
-        temperature: 0.8,
-        response_format: { type: 'json_object' }
-      })
-    }, 3, 2000); // retry up to 3 times, 2s initial delay
-
-    const data = await response.json();
+    const data = await callAI(
+      [
+        { role: 'system', content: getAdvisorGenerationPrompt(language) },
+        { role: 'user', content: getAdvisorGenerationUserPrompt(description, language) }
+      ],
+      { temperature: 0.8, response_format: { type: 'json_object' } }
+    );
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       throw new Error('Invalid API response format');
@@ -295,7 +200,6 @@ Return format example:
 
     const advisorProfile = JSON.parse(data.choices[0].message.content);
 
-    // Validate required fields
     const requiredFields = ['name', 'title', 'institution', 'field', 'research_interests', 'personality', 'lab_style', 'expectations', 'gender'];
     const missingFields = requiredFields.filter(field => !advisorProfile[field]);
 
@@ -313,7 +217,7 @@ Return format example:
 // Generates an advisor profile by scraping and parsing a faculty webpage via Jina Reader
 export const generateAdvisorFromURL = async (url, language = 'zh') => {
   try {
-    // Step 1: Fetch webpage content via Jina Reader
+    // Step 1: Fetch webpage content via Jina Reader (no API key needed, stays in browser)
     console.log('Fetching webpage content from:', url);
     const jinaURL = `https://r.jina.ai/${url}`;
 
@@ -377,28 +281,14 @@ Return format example:
   "photo_url": "https://example.com/photo.jpg"
 }`;
 
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: `网页内容：\n\n${webContent.slice(0, 10000)}` }
-    ];
-
     console.log('Calling API for information extraction...');
-    const { endpoint, apiKey, model } = await getAPIConfig();
-    const apiResponse = await fetchWithRetry(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: messages,
-        temperature: 0.7,
-        response_format: { type: 'json_object' }
-      })
-    }, 3, 2000);
-
-    const data = await apiResponse.json();
+    const data = await callAI(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `网页内容：\n\n${webContent.slice(0, 10000)}` }
+      ],
+      { temperature: 0.7, response_format: { type: 'json_object' } }
+    );
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       throw new Error('Invalid API response format');
@@ -406,7 +296,6 @@ Return format example:
 
     const advisorProfile = JSON.parse(data.choices[0].message.content);
 
-    // Validate required fields
     const requiredFields = ['name', 'title', 'institution', 'field', 'research_interests', 'personality', 'lab_style', 'expectations', 'gender'];
     const missingFields = requiredFields.filter(field => !advisorProfile[field]);
 
