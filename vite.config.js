@@ -28,10 +28,19 @@ export default defineConfig(({ mode }) => {
             req.on('data', chunk => { raw += chunk.toString() })
             req.on('end', async () => {
               try {
-                const { photoBase64, photoMimeType, styleBase64, styleMimeType } = JSON.parse(raw)
+                const { photoUrl, styleBase64, styleMimeType } = JSON.parse(raw)
                 const apiKey = env.OPENAI_API_KEY
 
-                const photoBuffer = Buffer.from(photoBase64, 'base64')
+                // Fetch the external photo server-side to bypass browser CORS restrictions
+                const photoRes = await fetch(photoUrl)
+                if (!photoRes.ok) {
+                  res.statusCode = 502
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({ error: `Failed to fetch photo: HTTP ${photoRes.status}` }))
+                  return
+                }
+                const photoBuffer = Buffer.from(await photoRes.arrayBuffer())
+                const photoMimeType = photoRes.headers.get('content-type') || 'image/jpeg'
                 const styleBuffer = Buffer.from(styleBase64, 'base64')
 
                 const formData = new FormData()
