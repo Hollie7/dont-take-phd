@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { generateAdvisorProfile, generateAdvisorFromURL } from '../services/deepseekAPI';
+import { generateAdvisorProfile, generateAdvisorFromURL } from '../services/apiService';
+import { generateCartoonAvatar } from '../services/avatarService';
 import { Background } from '../components/Background';
 import { InputCard } from '../components/InputCard';
 import { InfoCard } from '../components/InfoCard';
@@ -11,23 +12,26 @@ export const InitScreen = ({ onAdvisorGenerated }) => {
   const [advisorInput, setAdvisorInput] = useState('');
   const [urlInput, setUrlInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // 新增：错误消息状态
+  const [generatingStep, setGeneratingStep] = useState(''); // current progress label
+  const [errorMessage, setErrorMessage] = useState('');
+  const [warningMessage, setWarningMessage] = useState(''); // non-blocking avatar warning
   const { t, language } = useLanguage();
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    setErrorMessage(''); // 清除之前的错误
-    
+    setErrorMessage('');
+    setWarningMessage('');
+    setGeneratingStep('');
+
     try {
       let profile;
-      
+
       if (inputMode === 'url') {
         if (!urlInput.trim()) {
           setErrorMessage(t('errors.urlRequired'));
           setIsGenerating(false);
           return;
         }
-        // 验证 URL 格式
         try {
           new URL(urlInput.trim());
         } catch {
@@ -35,24 +39,41 @@ export const InitScreen = ({ onAdvisorGenerated }) => {
           setIsGenerating(false);
           return;
         }
+
+        // Step 1: Extract advisor profile from the homepage
+        setGeneratingStep(t('generating.profile'));
         profile = await generateAdvisorFromURL(urlInput.trim(), language);
+
+        // Step 2: If a photo URL was found, generate a cartoon avatar
+        if (profile.photo_url) {
+          setGeneratingStep(t('generating.avatar'));
+          try {
+            profile.customAvatar = await generateCartoonAvatar(profile.photo_url);
+          } catch (avatarError) {
+            console.warn('Avatar generation failed:', avatarError.message);
+            setWarningMessage(avatarError.message);
+          }
+        } else {
+          setWarningMessage(t('warnings.noPhotoFound'));
+        }
       } else {
         if (!advisorInput.trim()) {
           setErrorMessage(t('errors.descriptionRequired'));
           setIsGenerating(false);
           return;
         }
+        setGeneratingStep(t('generating.profileFromText'));
         profile = await generateAdvisorProfile(advisorInput.trim(), language);
       }
-      
+
       console.log(profile);
       onAdvisorGenerated(profile);
     } catch (error) {
       console.error('Generation error:', error);
-      // 显示具体的错误信息
       setErrorMessage(error.message || t('errors.generateFailed'));
     } finally {
       setIsGenerating(false);
+      setGeneratingStep('');
     }
   };
 
@@ -77,11 +98,30 @@ export const InitScreen = ({ onAdvisorGenerated }) => {
           </div>
         </div>
 
-        {/* 错误提示 */}
+        {/* Error message */}
         {errorMessage && (
           <div className="max-w-2xl mx-auto mb-6">
             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
               <p className="text-red-700 text-sm">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Non-blocking avatar warning */}
+        {warningMessage && (
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+              <p className="text-yellow-700 text-sm">{warningMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Generation progress */}
+        {isGenerating && generatingStep && (
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+              <div className="w-2 h-2 bg-gray-500 rounded-full animate-ping flex-shrink-0"></div>
+              <p className="text-gray-600 text-sm">{generatingStep}</p>
             </div>
           </div>
         )}

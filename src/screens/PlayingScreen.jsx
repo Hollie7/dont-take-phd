@@ -3,7 +3,7 @@ import { AdvisorAvatar } from '../components/AdvisorAvatar';
 import { SatisfactionBar } from '../components/SatisfactionBar';
 import { ChatMessage } from '../components/ChatMessage';
 import { GameInput } from '../components/GameInput';
-import { evaluateStudentResponse } from '../services/deepseekAPI';
+import { evaluateStudentResponse } from '../services/apiService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Background } from '../components/Background';
 
@@ -71,6 +71,7 @@ export const PlayingScreen = ({
         }, 2000);
       }
     } catch (error) {
+      console.error('evaluateStudentResponse error:', error);
       setMessages(prev => [...prev, {
         role: 'advisor',
         content: t('playing.errorMessage'),
@@ -91,12 +92,13 @@ export const PlayingScreen = ({
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <AdvisorAvatar 
-                emotion={currentEmotion} 
-                isProcessing={isProcessing} 
+              <AdvisorAvatar
+                emotion={currentEmotion}
+                isProcessing={isProcessing}
                 onClick={onShowModal}
                 size="md"
                 gender={advisorProfile.gender}
+                customAvatar={advisorProfile.customAvatar}
               />
               <div>
                 <h1 className="text-xl font-semibold text-gray-900">

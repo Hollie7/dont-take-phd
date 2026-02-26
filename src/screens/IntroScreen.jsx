@@ -28,11 +28,12 @@ export const IntroScreen = ({ advisorProfile, onStartGame, onReset, onShowModal 
             {/* 导师信息 */}
             <div className="text-center">
               <div className="flex justify-center mb-6">
-                <AdvisorAvatar 
-                  emotion="neutral" 
-                  isProcessing={false} 
-                  size="xl" 
-                  gender={advisorProfile.gender} 
+                <AdvisorAvatar
+                  emotion="neutral"
+                  isProcessing={false}
+                  size="xl"
+                  gender={advisorProfile.gender}
+                  customAvatar={advisorProfile.customAvatar}
                 />
               </div>
               

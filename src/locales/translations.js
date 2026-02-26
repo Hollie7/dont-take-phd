@@ -126,16 +126,30 @@ export const translations = {
       round: "Round {current}/{total}",
       satisfaction: "Satisfaction",
       viewProfile: "View Profile",
-      thinking: "Professor is thinking..."
+      thinking: "Professor is thinking...",
+      errorMessage: "Something went wrong. Please try again."
     },
 
-    // 错误信息
+    // Error messages
     errors: {
       generateFailed: "Failed to generate advisor profile. Please try again.",
       networkError: "Network error. Please check your connection.",
       urlRequired: "Please enter a URL",
       invalidUrl: "Invalid URL format. Please enter a valid URL.",
       descriptionRequired: "Please enter a description"
+    },
+
+    // Progress labels during generation
+    generating: {
+      profile: "Extracting advisor profile from homepage...",
+      profileFromText: "Generating virtual advisor profile...",
+      avatar: "Generating cartoon avatar..."
+    },
+
+    // Non-blocking warnings
+    warnings: {
+      noPhotoFound: "No profile photo found on the page. Using default avatar.",
+      avatarFailed: "Could not generate cartoon avatar. Using default avatar"
     }
   },
 
@@ -265,7 +279,8 @@ export const translations = {
       round: "第 {current}/{total} 轮",
       satisfaction: "满意度",
       viewProfile: "查看档案",
-      thinking: "导师正在思考..."
+      thinking: "导师正在思考...",
+      errorMessage: "出现了错误，请重试"
     },
 
     // 错误信息
@@ -275,6 +290,19 @@ export const translations = {
       urlRequired: "请输入URL",
       invalidUrl: "URL格式无效，请输入有效的URL",
       descriptionRequired: "请输入描述"
+    },
+
+    // 生成进度标签
+    generating: {
+      profile: "正在从主页提取导师信息...",
+      profileFromText: "正在生成虚拟导师形象...",
+      avatar: "正在生成卡通头像..."
+    },
+
+    // 非阻断性警告
+    warnings: {
+      noPhotoFound: "页面中未找到个人照片，将使用默认头像。",
+      avatarFailed: "卡通头像生成失败，将使用默认头像"
     }
   }
 };

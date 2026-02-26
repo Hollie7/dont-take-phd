@@ -1,7 +1,7 @@
 import React from 'react';
 import { getAdvisorImage } from '../config/images';
 
-export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gender = 'female' }) => {
+export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gender = 'female', customAvatar = null }) => {
   const sizeClasses = {
     sm: 'w-12 h-12',
     md: 'w-16 h-16',
@@ -22,9 +22,9 @@ export const AdvisorAvatar = ({ emotion, isProcessing, onClick, size = 'md', gen
         className={`${sizeClasses[size]} border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center ${onClick ? 'cursor-pointer hover:border-gray-300' : ''} transition-all shadow-sm`}
         onClick={onClick}
       >
-        <img 
-          src={getAdvisorImage(emotion, isProcessing, gender)} 
-          alt="导师" 
+        <img
+          src={customAvatar || getAdvisorImage(emotion, isProcessing, gender)}
+          alt="导师"
           className="w-full h-full object-cover transition-all duration-500"
           onError={(e) => {
             e.target.style.display = 'none';

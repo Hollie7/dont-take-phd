@@ -1,11 +1,43 @@
-// DeepSeek API 服务
+// AI API service
+// Uses OpenAI (gpt-4o-mini) for users in certain regions, DeepSeek (deepseek-chat) elsewhere.
 
-const API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions";
-const MODEL = "deepseek-chat";
+// Cached config so geo detection only runs once per session
+let cachedAPIConfig = null;
 
-/**
- * 获取系统提示词（根据语言）
- */
+const getAPIConfig = async () => {
+  if (cachedAPIConfig) return cachedAPIConfig;
+
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    const openAICountries = ['US', 'JP', 'KR', 'IN', 'SG'];
+    if (openAICountries.includes(data.country_code)) {
+      cachedAPIConfig = {
+        endpoint: 'https://api.openai.com/v1/chat/completions',
+        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        model: 'gpt-4o-mini',
+      };
+    } else {
+      cachedAPIConfig = {
+        endpoint: 'https://api.deepseek.com/v1/chat/completions',
+        apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY,
+        model: 'deepseek-chat',
+      };
+    }
+  } catch {
+    // Fall back to DeepSeek if geo detection fails
+    cachedAPIConfig = {
+      endpoint: 'https://api.deepseek.com/v1/chat/completions',
+      apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY,
+      model: 'deepseek-chat',
+    };
+  }
+
+  console.log('API provider:', cachedAPIConfig.model);
+  return cachedAPIConfig;
+};
+
+// Returns the system prompt for advisor generation based on language
 const getAdvisorGenerationPrompt = (language) => {
   const prompts = {
     zh: `你是PhD导师生成器。以JSON格式回复（不含markdown）：
@@ -39,14 +71,12 @@ const getAdvisorGenerationPrompt = (language) => {
 };
 
 const getAdvisorGenerationUserPrompt = (description, language) => {
-  return language === 'en' 
+  return language === 'en'
     ? `Generate a PhD advisor profile for: ${description}`
     : `生成${description}的PhD导师档案`;
 };
 
-/**
- * 获取评估系统提示词（根据语言）
- */
+// Returns the system prompt for student response evaluation based on language
 const getEvaluationPrompt = (advisorProfile, satisfaction, turnCount, language) => {
 
   console.log("get evaluation prompt");
@@ -99,38 +129,42 @@ Reply in JSON (no markdown):
   return prompts[language] || prompts.zh;
 };
 
-/**
- * 评估学生回答
- */
+// Evaluates the student's response and returns satisfaction change + next question
 export const evaluateStudentResponse = async (
-  userMessage, 
-  conversationHistory, 
-  advisorProfile, 
-  satisfaction, 
-  turnCount, 
+  userMessage,
+  conversationHistory,
+  advisorProfile,
+  satisfaction,
+  turnCount,
   language = 'zh'
 ) => {
-
-  const response = await fetch(API_ENDPOINT, {
+  const { endpoint, apiKey, model } = await getAPIConfig();
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`,
+      "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: model,
       messages: [
-        { 
-          role: "system", 
+        {
+          role: "system",
           content: getEvaluationPrompt(advisorProfile, satisfaction, turnCount, language)
         },
         ...conversationHistory,
         { role: "user", content: userMessage }
       ],
       temperature: 0.7,
-      max_tokens: 1000
+      max_tokens: 1000,
+      response_format: { type: 'json_object' }
     })
   });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`API error ${response.status}: ${errText}`);
+  }
 
   const data = await response.json();
   const responseText = data.choices?.[0]?.message?.content ?? "";
@@ -138,39 +172,36 @@ export const evaluateStudentResponse = async (
   return JSON.parse(clean);
 };
 
-
-// deepseekAPI.js
-
-// 辅助函数：延迟
+// Helper: sleep for a given number of milliseconds
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 辅助函数：带重试的 fetch
+// Helper: fetch with automatic retry on timeout or server errors (429, 5xx)
 const fetchWithRetry = async (url, options, retries = 3, delayMs = 1000) => {
   for (let i = 0; i < retries; i++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
-      
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
       const response = await fetch(url, {
         ...options,
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
         return response;
       }
-      
-      // 如果是 429 (太多请求) 或 5xx 服务器错误，重试
+
+      // Retry on rate limit or server errors
       if (response.status === 429 || response.status >= 500) {
         console.warn(`Attempt ${i + 1} failed with status ${response.status}, retrying...`);
         if (i < retries - 1) {
-          await delay(delayMs * (i + 1)); // 指数退避
+          await delay(delayMs * (i + 1)); // exponential back-off
           continue;
         }
       }
-      
+
       throw new Error(`HTTP error! status: ${response.status}`);
     } catch (error) {
       if (error.name === 'AbortError') {
@@ -178,21 +209,20 @@ const fetchWithRetry = async (url, options, retries = 3, delayMs = 1000) => {
       } else {
         console.warn(`Attempt ${i + 1} failed:`, error.message);
       }
-      
+
       if (i === retries - 1) {
         throw error;
       }
-      
+
       await delay(delayMs * (i + 1));
     }
   }
 };
 
-
-// 原有的 generateAdvisorProfile 函数（添加重试）
+// Generates an advisor profile from a text description
 export const generateAdvisorProfile = async (description, language = 'zh') => {
   try {
-    const systemPrompt = language === 'zh' 
+    const systemPrompt = language === 'zh'
       ? `你是一个创意的导师档案生成器。基于用户提供的简短描述，生成一个详细的、有趣的导师档案。
 
 要求：
@@ -241,38 +271,38 @@ Return format example:
       { role: 'user', content: description }
     ];
 
-    console.log('Calling DeepSeek API for profile generation...');
-    
-    const response = await fetchWithRetry('https://api.deepseek.com/chat/completions', {
+    console.log('Calling API for profile generation...');
+    const { endpoint, apiKey, model } = await getAPIConfig();
+    const response = await fetchWithRetry(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: model,
         messages: messages,
         temperature: 0.8,
         response_format: { type: 'json_object' }
       })
-    }, 3, 2000); // 重试3次，每次延迟2秒
+    }, 3, 2000); // retry up to 3 times, 2s initial delay
 
     const data = await response.json();
-    
+
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       throw new Error('Invalid API response format');
     }
-    
+
     const advisorProfile = JSON.parse(data.choices[0].message.content);
-    
-    // 验证必需字段
-    const requiredFields = ['name', 'title', 'institution', 'field', 'research_interests', 'personality', 'lab_style', 'expectations', 'famous_quote', 'gender'];
+
+    // Validate required fields
+    const requiredFields = ['name', 'title', 'institution', 'field', 'research_interests', 'personality', 'lab_style', 'expectations', 'gender'];
     const missingFields = requiredFields.filter(field => !advisorProfile[field]);
-    
+
     if (missingFields.length > 0) {
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
-    
+
     return advisorProfile;
   } catch (error) {
     console.error('Error generating advisor profile:', error);
@@ -280,24 +310,24 @@ Return format example:
   }
 };
 
-// 改进的 generateAdvisorFromURL 函数
+// Generates an advisor profile by scraping and parsing a faculty webpage via Jina Reader
 export const generateAdvisorFromURL = async (url, language = 'zh') => {
   try {
-    // Step 1: 使用 Jina Reader 获取网页内容
+    // Step 1: Fetch webpage content via Jina Reader
     console.log('Fetching webpage content from:', url);
     const jinaURL = `https://r.jina.ai/${url}`;
-    
+
     const jinaResponse = await fetchWithRetry(jinaURL, {}, 3, 2000);
     const webContent = await jinaResponse.text();
-    
+
     console.log('Webpage content length:', webContent.length);
-    
+
     if (webContent.length < 100) {
       throw new Error('网页内容太短，可能是无效的URL或网页无法访问');
     }
-    
-    // Step 2: 用 DeepSeek 提取结构化信息
-    const systemPrompt = language === 'zh' 
+
+    // Step 2: Extract structured advisor info from the page content
+    const systemPrompt = language === 'zh'
       ? `你是一个专业的信息提取助手。请从以下网页内容中提取导师的详细信息，并以JSON格式返回。
 
 要求：
@@ -305,7 +335,8 @@ export const generateAdvisorFromURL = async (url, language = 'zh') => {
 2. 提取性格特征（从文字风格、研究描述等推断）
 3. 推断实验室风格和对学生的期待
 4. 如果找不到某些信息，用合理的推测填充
-5. 必须返回有效的JSON格式
+5. 提取导师的头像图片URL（在网页内容中找到最可能是个人照片的图片链接），找不到则设为null
+6. 必须返回有效的JSON格式
 
 返回格式示例：
 {
@@ -318,7 +349,8 @@ export const generateAdvisorFromURL = async (url, language = 'zh') => {
   "lab_style": "每周组会，鼓励创新，强调论文产出",
   "expectations": ["有扎实的数学基础", "熟悉Python和深度学习框架", "能独立思考和解决问题"],
   "famous_quote": "Research is about asking the right questions.",
-  "gender": "male"
+  "gender": "male",
+  "photo_url": "https://example.com/photo.jpg"
 }`
       : `You are a professional information extraction assistant. Extract detailed advisor information from the following webpage content and return it in JSON format.
 
@@ -327,7 +359,8 @@ Requirements:
 2. Infer personality traits from writing style and research descriptions
 3. Infer lab style and expectations for students
 4. Use reasonable assumptions for missing information
-5. Must return valid JSON format
+5. Extract the advisor's profile photo URL (the image most likely to be a personal headshot); set to null if not found
+6. Must return valid JSON format
 
 Return format example:
 {
@@ -340,7 +373,8 @@ Return format example:
   "lab_style": "Weekly meetings, encourages innovation, emphasizes paper publications",
   "expectations": ["Strong mathematical foundation", "Proficient in Python and deep learning frameworks", "Ability to think independently"],
   "famous_quote": "Research is about asking the right questions.",
-  "gender": "male"
+  "gender": "male",
+  "photo_url": "https://example.com/photo.jpg"
 }`;
 
     const messages = [
@@ -348,16 +382,16 @@ Return format example:
       { role: 'user', content: `网页内容：\n\n${webContent.slice(0, 10000)}` }
     ];
 
-    console.log('Calling DeepSeek API for information extraction...');
-    
-    const apiResponse = await fetchWithRetry('https://api.deepseek.com/chat/completions', {
+    console.log('Calling API for information extraction...');
+    const { endpoint, apiKey, model } = await getAPIConfig();
+    const apiResponse = await fetchWithRetry(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: model,
         messages: messages,
         temperature: 0.7,
         response_format: { type: 'json_object' }
@@ -365,28 +399,27 @@ Return format example:
     }, 3, 2000);
 
     const data = await apiResponse.json();
-    
+
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       throw new Error('Invalid API response format');
     }
-    
+
     const advisorProfile = JSON.parse(data.choices[0].message.content);
-    
-    // 验证必需字段
-    const requiredFields = ['name', 'title', 'institution', 'field', 'research_interests', 'personality', 'lab_style', 'expectations', 'famous_quote', 'gender'];
+
+    // Validate required fields
+    const requiredFields = ['name', 'title', 'institution', 'field', 'research_interests', 'personality', 'lab_style', 'expectations', 'gender'];
     const missingFields = requiredFields.filter(field => !advisorProfile[field]);
-    
+
     if (missingFields.length > 0) {
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
-    
+
     console.log('Generated advisor profile:', advisorProfile);
     return advisorProfile;
-    
+
   } catch (error) {
     console.error('Error generating advisor from URL:', error);
-    
-    // 提供更友好的错误信息
+
     if (error.message.includes('fetch')) {
       throw new Error('网络连接失败，请检查网络后重试');
     } else if (error.message.includes('timeout') || error.name === 'AbortError') {
@@ -398,6 +431,3 @@ Return format example:
     }
   }
 };
-
-// 导出现有的 evaluateStudentResponse 函数...
-// (保持原有代码)

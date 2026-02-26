@@ -28,11 +28,12 @@ export const AdvisorModal = ({ advisorProfile, currentEmotion, isProcessing, onC
           
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
-              <AdvisorAvatar 
-                emotion={currentEmotion} 
-                isProcessing={isProcessing} 
-                size="lg" 
+              <AdvisorAvatar
+                emotion={currentEmotion}
+                isProcessing={isProcessing}
+                size="lg"
                 gender={advisorProfile.gender}
+                customAvatar={advisorProfile.customAvatar}
               />
             </div>
             

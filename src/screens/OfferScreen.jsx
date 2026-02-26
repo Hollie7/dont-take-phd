@@ -31,11 +31,12 @@ export const OfferScreen = ({ advisorProfile, onReset }) => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
           {/* 导师头像 */}
           <div className="flex justify-center mb-6">
-            <AdvisorAvatar 
-              emotion="happy" 
-              isProcessing={false} 
-              size="xl" 
+            <AdvisorAvatar
+              emotion="happy"
+              isProcessing={false}
+              size="xl"
               gender={advisorProfile.gender}
+              customAvatar={advisorProfile.customAvatar}
             />
           </div>
 
