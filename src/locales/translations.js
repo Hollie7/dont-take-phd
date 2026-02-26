@@ -129,6 +129,19 @@ export const translations = {
       errorMessage: "Something went wrong. Please try again."
     },
 
+    // Voice mode
+    voice: {
+      enable: "Enable voice mode",
+      disable: "Disable voice mode",
+      speaking: "Advisor is speaking...",
+      recording: "Your turn — speak now",
+      transcribing: "Transcribing...",
+      done: "Done",
+      hint: "💡 Press Done to submit early, or wait for the timer",
+      replay: "Replay",
+      micWarning: "Can't hear you — check your microphone or headset is connected and not muted"
+    },
+
     // Error messages
     errors: {
       generateFailed: "Failed to generate advisor profile. Please try again.",
@@ -143,6 +156,12 @@ export const translations = {
       profile: "Extracting advisor profile from homepage...",
       profileFromText: "Generating virtual advisor profile...",
       avatar: "Generating cartoon avatar..."
+    },
+
+    // Download record
+    download: {
+      button: "Download Record",
+      loading: "Preparing..."
     },
 
     // Non-blocking warnings
@@ -281,6 +300,19 @@ export const translations = {
       errorMessage: "出现了错误，请重试"
     },
 
+    // 语音模式
+    voice: {
+      enable: "开启语音模式",
+      disable: "关闭语音模式",
+      speaking: "导师正在说话...",
+      recording: "轮到你了 — 请开口",
+      transcribing: "正在识别语音...",
+      done: "完成",
+      hint: "💡 说完后点击完成，或等待倒计时结束自动提交",
+      replay: "重播",
+      micWarning: "检测不到声音 — 请检查麦克风或耳机是否正确连接且未被静音"
+    },
+
     // 错误信息
     errors: {
       generateFailed: "生成导师档案失败，请重试",
@@ -295,6 +327,12 @@ export const translations = {
       profile: "正在从主页提取导师信息...",
       profileFromText: "正在生成虚拟导师形象...",
       avatar: "正在生成卡通头像..."
+    },
+
+    // 下载记录
+    download: {
+      button: "下载记录",
+      loading: "准备中..."
     },
 
     // 非阻断性警告

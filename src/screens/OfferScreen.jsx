@@ -1,11 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AdvisorAvatar } from '../components/AdvisorAvatar';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Background } from '../components/Background';
-import { Trophy, Sparkles, RefreshCw } from 'lucide-react';
+import { Trophy, Sparkles, RefreshCw, Download } from 'lucide-react';
+import { downloadConversationRecord } from '../services/downloadService';
 
-export const OfferScreen = ({ advisorProfile, onReset }) => {
+export const OfferScreen = ({ advisorProfile, gameRecord, onReset }) => {
   const { t, tf } = useLanguage();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!gameRecord) return;
+    setIsDownloading(true);
+    try {
+      await downloadConversationRecord({ ...gameRecord, advisorProfile, result: 'offer' });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6 relative overflow-hidden">
@@ -68,8 +80,18 @@ export const OfferScreen = ({ advisorProfile, onReset }) => {
           </div>
 
           {/* 按钮 */}
-          <div className="flex justify-center">
-            <button 
+          <div className="flex justify-center gap-3">
+            {gameRecord && (
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors shadow-sm border border-gray-200 flex items-center gap-2 disabled:opacity-60"
+              >
+                <Download className="w-4 h-4" />
+                <span>{isDownloading ? t('download.loading') : t('download.button')}</span>
+              </button>
+            )}
+            <button
               onClick={onReset}
               className="bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-8 rounded-xl transition-colors shadow-sm flex items-center gap-2"
             >

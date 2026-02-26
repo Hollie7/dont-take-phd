@@ -1,8 +1,8 @@
 import React from 'react';
-import { User, GraduationCap } from 'lucide-react';
+import { User, GraduationCap, Volume2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export const ChatMessage = ({ message, advisorName }) => {
+export const ChatMessage = ({ message, advisorName, audioUrl }) => {
   const { t } = useLanguage();
   const isAdvisor = message.role === 'advisor';
 
@@ -28,6 +28,15 @@ export const ChatMessage = ({ message, advisorName }) => {
           <p className={`text-xs mt-2 font-medium ${message.satisfactionChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
             {message.satisfactionChange > 0 ? '+' : ''}{message.satisfactionChange} {t('messages.points')}
           </p>
+        )}
+        {audioUrl && (
+          <button
+            onClick={() => new Audio(audioUrl).play()}
+            className="mt-2 flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <Volume2 className="w-3 h-3" />
+            {t('voice.replay')}
+          </button>
         )}
       </div>
     </div>

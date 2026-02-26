@@ -65,6 +65,66 @@ export default defineConfig(({ mode }) => {
             })
           })
 
+          server.middlewares.use('/api/speak', (req, res) => {
+            let raw = ''
+            req.on('data', chunk => { raw += chunk.toString() })
+            req.on('end', async () => {
+              try {
+                const { text, voice = 'shimmer', speed = 1.1 } = JSON.parse(raw)
+                const upstream = await fetch('https://api.openai.com/v1/audio/speech', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+                  },
+                  body: JSON.stringify({ model: 'tts-1', input: text, voice, speed }),
+                })
+                if (!upstream.ok) {
+                  const data = await upstream.json()
+                  res.statusCode = upstream.status
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify(data))
+                  return
+                }
+                const buffer = Buffer.from(await upstream.arrayBuffer())
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'audio/mpeg')
+                res.end(buffer)
+              } catch (err) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({ error: err.message }))
+              }
+            })
+          })
+
+          server.middlewares.use('/api/transcribe', (req, res) => {
+            let raw = ''
+            req.on('data', chunk => { raw += chunk.toString() })
+            req.on('end', async () => {
+              try {
+                const { audioBase64, mimeType = 'audio/webm' } = JSON.parse(raw)
+                const audioBuffer = Buffer.from(audioBase64, 'base64')
+                const formData = new FormData()
+                formData.append('file', new Blob([audioBuffer], { type: mimeType }), 'audio.webm')
+                formData.append('model', 'whisper-1')
+                const upstream = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+                  method: 'POST',
+                  headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+                  body: formData,
+                })
+                const data = await upstream.json()
+                res.statusCode = upstream.status
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify(upstream.ok ? { text: data.text } : data))
+              } catch (err) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({ error: err.message }))
+              }
+            })
+          })
+
           server.middlewares.use('/api/chat', (req, res) => {
             if (req.method !== 'POST') {
               res.statusCode = 405
