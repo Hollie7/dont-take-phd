@@ -12,7 +12,7 @@ export const useLanguage = () => {
 };
 
 export const LanguageProvider = ({ children }) => {
-  // 从 localStorage 读取保存的语言，默认中文
+  // Read saved language from localStorage, default to English
   const [language, setLanguage] = useState(() => {
     const saved = localStorage.getItem('language');
     return saved || 'en';

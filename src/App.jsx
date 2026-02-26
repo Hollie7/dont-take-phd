@@ -28,6 +28,7 @@ function AppContent() {
   } = useGameState();
 
   const [showAdvisorModal, setShowAdvisorModal] = useState(false);
+  const [gameRecord, setGameRecord] = useState(null);
 
   const handleAdvisorGenerated = (profile) => {
     setAdvisorProfile(profile);
@@ -38,7 +39,8 @@ function AppContent() {
     startGame(advisorProfile);
   };
 
-  const handleGameEnd = (result) => {
+  const handleGameEnd = (result, record) => {
+    setGameRecord(record ?? null);
     setGameState(result);
   };
 
@@ -96,10 +98,10 @@ function AppContent() {
       );
     
     case 'offer':
-      return <OfferScreen advisorProfile={advisorProfile} onReset={resetGame} />;
-    
+      return <OfferScreen advisorProfile={advisorProfile} gameRecord={gameRecord} onReset={resetGame} />;
+
     case 'rejection':
-      return <RejectionScreen advisorProfile={advisorProfile} onReset={resetGame} />;
+      return <RejectionScreen advisorProfile={advisorProfile} gameRecord={gameRecord} onReset={resetGame} />;
     
     default:
       return <InitScreen onAdvisorGenerated={handleAdvisorGenerated} />;

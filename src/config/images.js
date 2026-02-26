@@ -1,16 +1,16 @@
 // 导师表情图片配置
 export const ADVISOR_IMAGES = {
   male: {
-    happy: 'https://i.ibb.co/dwr31LYJ/Chat-GPT-Image-Dec-27-2025-07-49-46-PM.png',
-    thinking: 'https://i.ibb.co/PzTnMzSn/Chat-GPT-Image-Dec-27-2025-07-58-57-PM.png',
-    sad: 'https://i.ibb.co/jkTsQFK8/Chat-GPT-Image-Dec-27-2025-07-59-18-PM.png',
-    neutral: 'https://i.ibb.co/PzTnMzSn/Chat-GPT-Image-Dec-27-2025-07-58-57-PM.png'
+    happy: 'https://i.ibb.co/xKhQXGyw/Chat-GPT-Image-Dec-30-2025-09-05-49-PM.png',
+    thinking: 'https://i.ibb.co/4n637wrd/Chat-GPT-Image-Dec-30-2025-09-05-52-PM.png',
+    sad: 'https://i.ibb.co/Gv8k0wpN/Chat-GPT-Image-Dec-30-2025-09-08-20-PM.png',
+    neutral: 'https://i.ibb.co/xKhQXGyw/Chat-GPT-Image-Dec-30-2025-09-05-49-PM.png'
   },
   female: {
-    happy: 'https://i.ibb.co/9HtSXwRH/Chat-GPT-Image-Dec-27-2025-07-56-05-PM.png',
-    thinking: 'https://i.ibb.co/2G1S0Yz/Chat-GPT-Image-Dec-29-2025-03-11-44-PM.png',
-    sad: 'https://i.ibb.co/VcW1cRBG/Chat-GPT-Image-Dec-29-2025-03-11-41-PM.png',
-    neutral: 'https://i.ibb.co/2G1S0Yz/Chat-GPT-Image-Dec-29-2025-03-11-44-PM.png'
+    happy: 'https://i.ibb.co/jPXkDcVC/Chat-GPT-Image-Dec-30-2025-09-23-43-PM.png',
+    thinking: 'https://i.ibb.co/1Gw24bD9/Chat-GPT-Image-Dec-30-2025-09-23-45-PM.png',
+    sad: 'https://i.ibb.co/tMwZXrm2/Chat-GPT-Image-Dec-30-2025-09-23-47-PM.png',
+    neutral: 'https://i.ibb.co/jPXkDcVC/Chat-GPT-Image-Dec-30-2025-09-23-43-PM.png'
   }
 };
 

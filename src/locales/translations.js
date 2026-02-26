@@ -8,19 +8,26 @@ export const translations = {
       point1: "Understand what advisors care about",
       point2: "Test your genuine research interest",
       point3: "Think if PhD is right for you",
-      footer: "INSERT COIN TO START"
+      tip: "💡 Tip: If generation fails, please try again later. Network fluctuations may affect generation speed."
     },
-    input: {
-      title: "DESCRIBE_YOUR_ADVISOR.exe",
-      placeholder: `// Enter advisor description...
+
+   input: {
+    title: "DESCRIBE_YOUR_ADVISOR.exe",
+    subtitle: "Enter a description or paste the advisor's homepage URL",
+    modeText: "📝 Text Description",
+    modeUrl: "🔗 Homepage URL",
+    placeholder: `// Enter advisor description...
 // Example: Young AI professor, pushy but nice
 // Or: Theoretical scholar, hands-off style`,
-      charCount: "[{count}/500]",
-      button: "▶ START INTERVIEW",
-      buttonGenerating: "GENERATING...",
-      statusReady: "READY",
-      statusOnline: "ONLINE"
-    },
+    urlPlaceholder: "https://example.edu/~professor",
+    urlExample: "Example",
+    charCount: "[{count}/500]",
+    button: "▶ START INTERVIEW",
+    buttonGenerating: "GENERATING...",
+    statusReady: "READY",
+    statusOnline: "ONLINE"
+  },
+
     footer: "▶ PRESS START TO BEGIN YOUR JOURNEY ◀",
     
     // 动画文字
@@ -71,16 +78,20 @@ export const translations = {
 
     // 介绍屏幕
     intro: {
+      meetAdvisor: "Meet Your Advisor",
+      subtitle: "Get to know your potential PhD advisor",
       viewDetails: "View Advisor Details",
       gameRules: "📚 Game Rules",
       rule1: "You will have an in-depth conversation with {name}",
       rule2: "Advisor's expression changes with satisfaction (😊 → 🤔 → 😔)",
       rule3: "Your answers will affect the advisor's satisfaction",
       rule4: "Finally get an offer or be rejected",
+      advisorTraits: "Advisor Traits",
       advisorPersonality: "Personality:",
       researchField: "Research Field:",
       changeAdvisor: "Change Advisor",
       startInterview: "Start Interview",
+      readyPrompt: "▶ Press start when ready",
       initialMessage: "Hello, I'm {name}. Tell me, why do you want to pursue a PhD?"
     },
 
@@ -114,13 +125,49 @@ export const translations = {
       round: "Round {current}/{total}",
       satisfaction: "Satisfaction",
       viewProfile: "View Profile",
-      thinking: "Professor is thinking..."
+      thinking: "Professor is thinking...",
+      errorMessage: "Something went wrong. Please try again."
     },
 
-    // 错误信息
+    // Voice mode
+    voice: {
+      enable: "Enable voice mode",
+      disable: "Disable voice mode",
+      speaking: "Advisor is speaking...",
+      recording: "Your turn — speak now",
+      transcribing: "Transcribing...",
+      done: "Done",
+      hint: "💡 Press Done to submit early, or wait for the timer",
+      replay: "Replay",
+      micWarning: "Can't hear you — check your microphone or headset is connected and not muted"
+    },
+
+    // Error messages
     errors: {
       generateFailed: "Failed to generate advisor profile. Please try again.",
-      networkError: "Network error. Please check your connection."
+      networkError: "Network error. Please check your connection.",
+      urlRequired: "Please enter a URL",
+      invalidUrl: "Invalid URL format. Please enter a valid URL.",
+      descriptionRequired: "Please enter a description"
+    },
+
+    // Progress labels during generation
+    generating: {
+      profile: "Extracting advisor profile from homepage...",
+      profileFromText: "Generating virtual advisor profile...",
+      avatar: "Generating cartoon avatar..."
+    },
+
+    // Download record
+    download: {
+      button: "Download Record",
+      loading: "Preparing..."
+    },
+
+    // Non-blocking warnings
+    warnings: {
+      noPhotoFound: "No profile photo found on the page. Using default avatar.",
+      avatarFailed: "Could not generate cartoon avatar. Using default avatar"
     }
   },
 
@@ -133,19 +180,26 @@ export const translations = {
       point1: "了解导师会关心什么问题",
       point2: "检验你对研究的真实兴趣",
       point3: "思考PhD是否真的适合你",
-      footer: "INSERT COIN TO START"
+      tip: "💡 提示：如果生成失败，请稍后重试。网络波动可能影响生成速度。"
     },
-    input: {
+
+   input: {
       title: "DESCRIBE_YOUR_ADVISOR.exe",
+      subtitle: "输入描述或粘贴导师的个人主页链接",
+      modeText: "📝 文字描述",
+      modeUrl: "🔗 主页链接",
       placeholder: `// 输入导师描述...
-// 例如：研究AI的年轻教授，push但nice
-// 或者：做理论的老学者，放养型`,
+  // 例如：研究AI的年轻教授，push但nice
+  // 或者：做理论的老学者，放养型`,
+      urlPlaceholder: "https://example.edu/~professor",
+      urlExample: "示例",
       charCount: "[{count}/500]",
       button: "▶ START INTERVIEW",
       buttonGenerating: "生成中...",
       statusReady: "READY",
       statusOnline: "ONLINE"
     },
+
     footer: "▶ PRESS START TO BEGIN YOUR JOURNEY ◀",
 
     // 动画文字
@@ -196,16 +250,20 @@ export const translations = {
 
      // 介绍屏幕
     intro: {
+      meetAdvisor: "认识你的导师",
+      subtitle: "了解你的潜在博士导师",
       viewDetails: "查看导师详细信息",
       gameRules: "📚 游戏说明",
       rule1: "你将与 {name} 进行深入对话",
       rule2: "导师表情会随着满意度实时变化（😊 → 🤔 → 😔）",
       rule3: "你的回答将影响导师的满意度",
       rule4: "最终获得offer或被拒绝",
+      advisorTraits: "导师特征",
       advisorPersonality: "导师性格：",
       researchField: "研究领域：",
       changeAdvisor: "换导师",
       startInterview: "开始面试",
+      readyPrompt: "▶ 准备好了就开始吧",
       initialMessage: "你好，我是{name}。请告诉我，你为什么想要攻读PhD？"
     },
 
@@ -238,13 +296,49 @@ export const translations = {
       round: "第 {current}/{total} 轮",
       satisfaction: "满意度",
       viewProfile: "查看档案",
-      thinking: "导师正在思考..."
+      thinking: "导师正在思考...",
+      errorMessage: "出现了错误，请重试"
+    },
+
+    // 语音模式
+    voice: {
+      enable: "开启语音模式",
+      disable: "关闭语音模式",
+      speaking: "导师正在说话...",
+      recording: "轮到你了 — 请开口",
+      transcribing: "正在识别语音...",
+      done: "完成",
+      hint: "💡 说完后点击完成，或等待倒计时结束自动提交",
+      replay: "重播",
+      micWarning: "检测不到声音 — 请检查麦克风或耳机是否正确连接且未被静音"
     },
 
     // 错误信息
     errors: {
       generateFailed: "生成导师档案失败，请重试",
-      networkError: "网络错误，请检查连接"
+      networkError: "网络错误，请检查连接",
+      urlRequired: "请输入URL",
+      invalidUrl: "URL格式无效，请输入有效的URL",
+      descriptionRequired: "请输入描述"
+    },
+
+    // 生成进度标签
+    generating: {
+      profile: "正在从主页提取导师信息...",
+      profileFromText: "正在生成虚拟导师形象...",
+      avatar: "正在生成卡通头像..."
+    },
+
+    // 下载记录
+    download: {
+      button: "下载记录",
+      loading: "准备中..."
+    },
+
+    // 非阻断性警告
+    warnings: {
+      noPhotoFound: "页面中未找到个人照片，将使用默认头像。",
+      avatarFailed: "卡通头像生成失败，将使用默认头像"
     }
   }
 };

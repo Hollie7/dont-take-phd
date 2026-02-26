@@ -1,120 +1,110 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AdvisorAvatar } from '../components/AdvisorAvatar';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArcadeBackground } from '../components/ArcadeBackground';
-import { XCircle, RefreshCw } from 'lucide-react';
+import { Background } from '../components/Background';
+import { XCircle, RefreshCw, Download } from 'lucide-react';
+import { downloadConversationRecord } from '../services/downloadService';
 
-export const RejectionScreen = ({ advisorProfile, onReset }) => {
+export const RejectionScreen = ({ advisorProfile, gameRecord, onReset }) => {
   const { t, tf } = useLanguage();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!gameRecord) return;
+    setIsDownloading(true);
+    try {
+      await downloadConversationRecord({ ...gameRecord, advisorProfile, result: 'rejection' });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/50 to-black flex items-center justify-center p-4 relative overflow-hidden">
-      {/* 街机背景 */}
-      <ArcadeBackground />
+    <div className="min-h-screen bg-white flex items-center justify-center p-6 relative overflow-hidden">
+      <Background />
 
-      <div className="max-w-3xl w-full relative z-10">
-        {/* 标题动画 */}
-        <div className="text-center mb-8">
-          <div className="inline-block relative">
-            {/* 发光效果 */}
-            <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-red-500 via-pink-500 to-red-500 opacity-50 animate-pulse"></div>
-            
-            <h1 className="text-6xl md:text-7xl font-bold pixel-text mb-4 relative"
-              style={{
-                background: 'linear-gradient(to right, #ef4444, #ec4899, #ef4444)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 0 40px rgba(239, 68, 68, 0.8)',
-              }}>
-              {t('result.rejection.title')}
-            </h1>
-          </div>
+      <div className="max-w-2xl w-full relative z-10">
+        {/* 标题 */}
+        <div className="text-center mb-12">
+          {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
+            <XCircle className="w-8 h-8 text-red-600" />
+          </div> */}
+          
+          <h1 className="text-4xl font-semibold text-gray-900 mb-3">
+            {t('result.rejection.title')}
+          </h1>
+          
+          <p className="text-gray-500 text-sm">
+            Don't give up - every interview is a learning experience
+          </p>
         </div>
 
-        {/* CRT 显示器 */}
-        <div className="bg-gradient-to-b from-gray-800 to-gray-900 p-8 rounded-lg border-4 border-cyan-500 pixel-corners shadow-2xl relative"
-          style={{
-            boxShadow: '0 0 40px rgba(0,255,255,0.4), inset 0 0 30px rgba(0,0,0,0.5)'
-          }}>
-          
-          {/* 顶部装饰条 */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-pink-500 to-red-500"></div>
-
-          {/* 状态指示灯 */}
-          <div className="absolute top-4 right-4 flex gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
+        {/* 主卡片 */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
+          {/* 导师头像 */}
+          <div className="flex justify-center mb-6">
+            <AdvisorAvatar
+              emotion="sad"
+              isProcessing={false}
+              size="xl"
+              gender={advisorProfile.gender}
+              customAvatar={advisorProfile.customAvatar}
+            />
           </div>
 
-          {/* 扫描线效果 */}
-          <div className="absolute inset-0 pointer-events-none opacity-5 rounded-lg overflow-hidden">
-            <div className="w-full h-full" style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #00ffff 2px, #00ffff 4px)',
-            }}></div>
+          {/* NOT ACCEPTED 标签 */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-red-50 border border-red-200 px-6 py-2 rounded-xl inline-flex items-center gap-2">
+              <XCircle className="w-4 h-4 text-red-600" />
+              <span className="text-red-700 font-medium text-sm">
+                Not Accepted
+              </span>
+            </div>
           </div>
 
-          {/* 内容 */}
-          <div className="relative z-10">
-            {/* 导师头像 */}
-            <div className="flex justify-center mb-6 relative">
-              <div className="relative">
-                <AdvisorAvatar emotion="sad" isProcessing={false} size="xl" gender={advisorProfile.gender} />
-                {/* 头像发光 */}
-                <div className="absolute inset-0 bg-red-500 opacity-20 blur-2xl rounded-full -z-10"></div>
-              </div>
-            </div>
+          {/* 消息 */}
+          <div className="bg-gray-50 border border-gray-100 rounded-xl p-6 mb-6">
+            <p className="text-gray-700 text-base leading-relaxed text-center">
+              {tf('result.rejection.message', { 
+                name: advisorProfile.name, 
+                field: advisorProfile.field 
+              })}
+            </p>
+          </div>
 
-            {/* GAME OVER 标签 */}
-            <div className="flex justify-center mb-6">
-              <div className="bg-black/50 border-2 border-red-500 px-6 py-2 pixel-corners inline-flex items-center gap-2">
-                <XCircle className="w-5 h-5 text-red-400" />
-                <span className="text-red-400 font-bold pixel-text"
-                  style={{textShadow: '0 0 10px rgba(239, 68, 68, 0.8)'}}>
-                  NOT ACCEPTED
-                </span>
-              </div>
-            </div>
+          {/* 导师信息 */}
+          <div className="text-center mb-6">
+            <p className="text-gray-500 text-sm">
+              {advisorProfile.name} · {advisorProfile.institution}
+            </p>
+          </div>
 
-            {/* 消息 */}
-            <div className="bg-black/30 border-2 border-cyan-500/50 p-6 pixel-corners mb-8">
-              <p className="text-cyan-100 text-lg leading-relaxed font-mono text-center">
-                {tf('result.rejection.message', { name: advisorProfile.name, field: advisorProfile.field })}
-              </p>
-            </div>
-
-            {/* 导师信息 */}
-            <div className="text-center mb-6">
-              <p className="text-cyan-400 font-mono text-sm"
-                style={{textShadow: '0 0 5px rgba(0,255,255,0.5)'}}>
-                {advisorProfile.name} · {advisorProfile.institution}
-              </p>
-            </div>
-
-            {/* 按钮 */}
-            <div className="flex justify-center">
-              <button 
-                onClick={onReset}
-                className="relative group"
+          {/* 按钮 */}
+          <div className="flex justify-center gap-3">
+            {gameRecord && (
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors shadow-sm border border-gray-200 flex items-center gap-2 disabled:opacity-60"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                <div className="relative bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-bold py-4 px-8 border-4 border-red-400 pixel-corners transition-all shadow-lg flex items-center gap-2">
-                  <RefreshCw className="w-5 h-5" />
-                  <span className="pixel-text tracking-wider">{t('result.rejection.button')}</span>
-                </div>
+                <Download className="w-4 h-4" />
+                <span>{isDownloading ? t('download.loading') : t('download.button')}</span>
               </button>
-            </div>
+            )}
+            <button
+              onClick={onReset}
+              className="bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-8 rounded-xl transition-colors shadow-sm flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>{t('result.rejection.button')}</span>
+            </button>
           </div>
-
-          {/* 底部装饰条 */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-pink-500 to-red-500"></div>
         </div>
 
         {/* 底部提示 */}
-        <div className="mt-6 text-center">
-          <p className="text-red-400 font-mono text-sm animate-pulse"
-            style={{textShadow: '0 0 5px rgba(239, 68, 68, 0.5)'}}>
-            ▶ TRY AGAIN? ◀
+        <div className="text-center">
+          <p className="text-gray-400 text-sm">
+            Try again with different answers or a new advisor
           </p>
         </div>
       </div>

@@ -1,85 +1,147 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { generateAdvisorProfile } from '../services/deepseekAPI';
-import { ArcadeBackground } from '../components/ArcadeBackground';
-import { CRTMonitor } from '../components/CRTMonitor';
-import { PixelNote } from '../components/PixelNote';
-import { ArcadeAnimations } from '../components/animations/ArcadeAnimations';
+import { generateAdvisorProfile, generateAdvisorFromURL } from '../services/apiService';
+import { generateCartoonAvatar } from '../services/avatarService';
+import { Background } from '../components/Background';
+import { InputCard } from '../components/InputCard';
+import { InfoCard } from '../components/InfoCard';
 import { LanguageSwitch } from '../components/LanguageSwitch';
 
 export const InitScreen = ({ onAdvisorGenerated }) => {
+  const [inputMode, setInputMode] = useState('text');
   const [advisorInput, setAdvisorInput] = useState('');
+  const [urlInput, setUrlInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { t, language } = useLanguage(); // 获取当前语言
+  const [generatingStep, setGeneratingStep] = useState(''); // current progress label
+  const [errorMessage, setErrorMessage] = useState('');
+  const [warningMessage, setWarningMessage] = useState(''); // non-blocking avatar warning
+  const { t, language } = useLanguage();
 
   const handleGenerate = async () => {
-    if (!advisorInput.trim() || isGenerating) return;
-    
     setIsGenerating(true);
+    setErrorMessage('');
+    setWarningMessage('');
+    setGeneratingStep('');
+
     try {
-      // 传入 language 参数
-      const profile = await generateAdvisorProfile(advisorInput.trim(), language);
+      let profile;
+
+      if (inputMode === 'url') {
+        if (!urlInput.trim()) {
+          setErrorMessage(t('errors.urlRequired'));
+          setIsGenerating(false);
+          return;
+        }
+        try {
+          new URL(urlInput.trim());
+        } catch {
+          setErrorMessage(t('errors.invalidUrl'));
+          setIsGenerating(false);
+          return;
+        }
+
+        // Step 1: Extract advisor profile from the homepage
+        setGeneratingStep(t('generating.profile'));
+        profile = await generateAdvisorFromURL(urlInput.trim(), language);
+
+        // Step 2: If a photo URL was found, generate a cartoon avatar
+        if (profile.photo_url) {
+          setGeneratingStep(t('generating.avatar'));
+          try {
+            profile.customAvatar = await generateCartoonAvatar(profile.photo_url);
+          } catch (avatarError) {
+            console.warn('Avatar generation failed:', avatarError.message);
+            setWarningMessage(avatarError.message);
+          }
+        } else {
+          setWarningMessage(t('warnings.noPhotoFound'));
+        }
+      } else {
+        if (!advisorInput.trim()) {
+          setErrorMessage(t('errors.descriptionRequired'));
+          setIsGenerating(false);
+          return;
+        }
+        setGeneratingStep(t('generating.profileFromText'));
+        profile = await generateAdvisorProfile(advisorInput.trim(), language);
+      }
+
       console.log(profile);
       onAdvisorGenerated(profile);
     } catch (error) {
-      alert(t('errors.generateFailed'));
+      console.error('Generation error:', error);
+      setErrorMessage(error.message || t('errors.generateFailed'));
     } finally {
       setIsGenerating(false);
+      setGeneratingStep('');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/50 to-black flex items-center justify-center p-4 relative overflow-hidden">
-      {/* 语言切换 */}
+    <div className="min-h-screen bg-white flex items-center justify-center p-6 relative overflow-hidden">
       <LanguageSwitch />
-      
-      {/* 街机背景 */}
-      <ArcadeBackground />
-      
-      {/* 街机动画 */}
-      <ArcadeAnimations />
+      <Background />
 
       <div className="max-w-6xl w-full relative z-10">
         {/* 标题区域 */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl md:text-7xl font-bold pixel-text mb-4 relative inline-block">
-            <span className="absolute inset-0 blur-lg bg-gradient-to-r from-pink-500 via-cyan-500 to-yellow-500 opacity-50"></span>
-            <span className="relative bg-gradient-to-r from-pink-500 via-cyan-400 to-yellow-500 text-transparent bg-clip-text animate-pulse"
-              style={{
-                textShadow: '0 0 20px rgba(255,0,255,0.5), 0 0 40px rgba(0,255,255,0.3)',
-              }}>
-              {t('title')}
-            </span>
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+            {t('title')}
           </h1>
           
-          {/* 副标题 */}
           <div className="mt-6 inline-block">
-            <div className="bg-black/50 border-2 border-cyan-500/50 px-6 py-3 relative">
-              <div className="absolute top-0 left-0 w-2 h-2 bg-cyan-400 animate-pulse"></div>
-              <div className="absolute top-0 right-0 w-2 h-2 bg-pink-400 animate-pulse" style={{animationDelay: '0.5s'}}></div>
-              <div className="absolute bottom-0 left-0 w-2 h-2 bg-yellow-400 animate-pulse" style={{animationDelay: '1s'}}></div>
-              <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 animate-pulse" style={{animationDelay: '1.5s'}}></div>
-              
-              <p className="text-cyan-300 font-mono text-sm md:text-base leading-relaxed whitespace-pre-line"
-                style={{textShadow: '0 0 10px rgba(0,255,255,0.5)'}}>
+            <div className="bg-gray-50 rounded-xl px-8 py-4 max-w-2xl">
+              <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">
                 {t('subtitle')}
               </p>
             </div>
           </div>
         </div>
 
+        {/* Error message */}
+        {errorMessage && (
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <p className="text-red-700 text-sm">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Non-blocking avatar warning */}
+        {warningMessage && (
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+              <p className="text-yellow-700 text-sm">{warningMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Generation progress */}
+        {isGenerating && generatingStep && (
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+              <div className="w-2 h-2 bg-gray-500 rounded-full animate-ping flex-shrink-0"></div>
+              <p className="text-gray-600 text-sm">{generatingStep}</p>
+            </div>
+          </div>
+        )}
+
         {/* 主要内容区域 */}
         <div className="grid md:grid-cols-12 gap-8 items-start">
-          {/* 左侧纸条 */}
-          <div className="md:col-span-3 flex justify-center md:justify-end">
-            <PixelNote />
+          {/* 左侧信息卡片 */}
+          <div className="md:col-span-4">
+            <InfoCard />
           </div>
 
-          {/* 中间显示器 */}
-          <div className="md:col-span-9">
-            <CRTMonitor
+          {/* 右侧输入卡片 */}
+          <div className="md:col-span-8">
+            <InputCard
+              inputMode={inputMode}
+              setInputMode={setInputMode}
               advisorInput={advisorInput}
               setAdvisorInput={setAdvisorInput}
+              urlInput={urlInput}
+              setUrlInput={setUrlInput}
               isGenerating={isGenerating}
               onGenerate={handleGenerate}
             />
@@ -88,8 +150,7 @@ export const InitScreen = ({ onAdvisorGenerated }) => {
 
         {/* 底部提示 */}
         <div className="mt-8 text-center">
-          <p className="text-green-400 font-mono text-xs animate-pulse"
-            style={{textShadow: '0 0 5px rgba(0,255,0,0.5)'}}>
+          <p className="text-gray-400 text-sm">
             {t('footer')}
           </p>
         </div>
