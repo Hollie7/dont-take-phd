@@ -16,9 +16,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'OpenAI API key not configured' });
   }
 
-  const { photoBase64, photoMimeType, styleBase64, styleMimeType } = req.body;
+  const { photoUrl, styleBase64, styleMimeType } = req.body;
 
-  const photoBuffer = Buffer.from(photoBase64, 'base64');
+  // Fetch the external photo server-side to bypass browser CORS restrictions
+  const photoRes = await fetch(photoUrl);
+  if (!photoRes.ok) {
+    return res.status(502).json({ error: `Failed to fetch photo: HTTP ${photoRes.status}` });
+  }
+  const photoBuffer = Buffer.from(await photoRes.arrayBuffer());
+  const photoMimeType = photoRes.headers.get('content-type') || 'image/jpeg';
+
   const styleBuffer = Buffer.from(styleBase64, 'base64');
 
   const formData = new FormData();

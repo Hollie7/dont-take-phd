@@ -1,27 +1,10 @@
 // Avatar generation service
 // Converts a real photo into a Notion-style cartoon avatar via /api/avatar (serverless).
-// Images are sent as base64 JSON so the OpenAI key never reaches the browser.
+// The external photo URL is fetched server-side to avoid CORS restrictions.
 
-// Public CORS proxy used as a fallback for cross-origin image fetches
-const CORS_PROXY = 'https://corsproxy.io/?url=';
-
-// Fetches a URL and returns a Blob.
-// For external URLs, tries direct fetch first; falls back to CORS proxy if blocked.
-const fetchImageAsBlob = async (url) => {
-  if (url.startsWith('/')) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.blob();
-  }
-
-  try {
-    const res = await fetch(url);
-    if (res.ok) return res.blob();
-  } catch {
-    // CORS or network error — fall through to proxy
-  }
-
-  const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+// Fetches a local URL and returns a Blob (only used for local assets like /notion-style.png)
+const fetchLocalBlob = async (url) => {
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.blob();
 };
@@ -41,23 +24,15 @@ const blobToBase64 = (blob) =>
  * @returns {Promise<string>} base64 data URL of the generated avatar (data:image/png;base64,...)
  */
 export const generateCartoonAvatar = async (photoUrl) => {
-  // Fetch both images in the browser (no API key needed here)
-  const [photoBlob, styleBlob] = await Promise.all([
-    fetchImageAsBlob(photoUrl),
-    fetchImageAsBlob('/notion-style.png'),
-  ]);
-
-  const [photoBase64, styleBase64] = await Promise.all([
-    blobToBase64(photoBlob),
-    blobToBase64(styleBlob),
-  ]);
+  // Only fetch the local style image in the browser; external photo is fetched server-side
+  const styleBlob = await fetchLocalBlob('/notion-style.png');
+  const styleBase64 = await blobToBase64(styleBlob);
 
   const response = await fetch('/api/avatar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      photoBase64,
-      photoMimeType: photoBlob.type || 'image/jpeg',
+      photoUrl,
       styleBase64,
       styleMimeType: styleBlob.type || 'image/png',
     }),
