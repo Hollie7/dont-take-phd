@@ -8,7 +8,6 @@ export const translations = {
       point1: "Understand what advisors care about",
       point2: "Test your genuine research interest",
       point3: "Think if PhD is right for you",
-      footer: "INSERT COIN TO START",
       tip: "💡 Tip: If generation fails, please try again later. Network fluctuations may affect generation speed."
     },
 
@@ -162,7 +161,6 @@ export const translations = {
       point1: "了解导师会关心什么问题",
       point2: "检验你对研究的真实兴趣",
       point3: "思考PhD是否真的适合你",
-      footer: "INSERT COIN TO START",
       tip: "💡 提示：如果生成失败，请稍后重试。网络波动可能影响生成速度。"
     },
 

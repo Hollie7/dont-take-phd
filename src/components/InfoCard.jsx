@@ -39,13 +39,6 @@ export const InfoCard = () => {
         </div>
       </div>
 
-      {/* 底部装饰 */}
-      <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-        <p className="text-xs text-gray-500 font-medium">
-          {t('gameInfo.footer')}
-        </p>
-      </div>
-
       {/* 提示信息 */}
       <div className="mt-4 pt-4 border-t border-gray-100">
         <p className="text-xs text-gray-500 leading-relaxed">
