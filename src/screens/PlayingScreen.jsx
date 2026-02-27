@@ -109,8 +109,9 @@ export const PlayingScreen = ({
       );
 
       const newSat = Math.max(0, Math.min(100, satisfaction + evaluation.satisfaction_change));
+      const newTurnCount = turnCount + 1;
       setSatisfaction(newSat);
-      setTurnCount(prev => prev + 1);
+      setTurnCount(newTurnCount);
 
       const advisorTimestamp = Date.now();
       const advisorMsg = {
@@ -121,7 +122,7 @@ export const PlayingScreen = ({
       };
       setMessages(prev => [...prev, advisorMsg]);
 
-      if (evaluation.should_end || turnCount >= 6) {
+      if (evaluation.should_end || newTurnCount >= MAX_TURNS) {
         // Build full message snapshot for the downloadable record
         const finalMessages = [...messages, studentMsg, advisorMsg];
         setTimeout(() => onGameEnd(
@@ -212,7 +213,7 @@ export const PlayingScreen = ({
                   {advisorProfile.name}
                 </h1>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {tf('playing.round', { current: turnCount + 1, total: MAX_TURNS })}
+                  {tf('playing.round', { current: Math.min(turnCount + 1, MAX_TURNS), total: MAX_TURNS })}
                 </p>
               </div>
             </div>
