@@ -74,6 +74,39 @@ export default defineConfig(({ mode }) => {
             })
           })
 
+          server.middlewares.use('/api/scrape-photo', async (req, res) => {
+            const urlParam = new URL(req.url, 'http://localhost').searchParams.get('url')
+            res.setHeader('Content-Type', 'application/json')
+            if (!urlParam) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ error: 'url required' }))
+              return
+            }
+            try {
+              const response = await fetch(urlParam, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; bot/1.0)' },
+                redirect: 'follow',
+              })
+              if (!response.ok) { res.statusCode = 200; res.end(JSON.stringify({ imgs: [] })); return }
+              const html = await response.text()
+              const base = new URL(urlParam)
+              const imgs = []
+              const imgRegex = /<img[^>]+src=["']([^"'>\s]+)["']/gi
+              let match
+              while ((match = imgRegex.exec(html)) !== null) {
+                try {
+                  const absUrl = new URL(match[1], base).href
+                  if (/\.(jpg|jpeg|png|webp|gif)/i.test(absUrl)) imgs.push(absUrl)
+                } catch {}
+              }
+              res.statusCode = 200
+              res.end(JSON.stringify({ imgs: [...new Set(imgs)] }))
+            } catch {
+              res.statusCode = 200
+              res.end(JSON.stringify({ imgs: [] }))
+            }
+          })
+
           server.middlewares.use('/api/speak', (req, res) => {
             let raw = ''
             req.on('data', chunk => { raw += chunk.toString() })

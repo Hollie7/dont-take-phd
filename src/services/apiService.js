@@ -217,11 +217,14 @@ export const generateAdvisorProfile = async (description, language = 'zh') => {
 // Generates an advisor profile by scraping and parsing a faculty webpage via Jina Reader
 export const generateAdvisorFromURL = async (url, language = 'zh') => {
   try {
-    // Step 1: Fetch webpage content via Jina Reader (no API key needed, stays in browser)
+    // Step 1: Fetch webpage text via Jina Reader + scrape raw image URLs in parallel
     console.log('Fetching webpage content from:', url);
     const jinaURL = `https://r.jina.ai/${url}`;
 
-    const jinaResponse = await fetchWithRetry(jinaURL, {}, 3, 2000);
+    const [jinaResponse, scrapeResponse] = await Promise.all([
+      fetchWithRetry(jinaURL, {}, 3, 2000),
+      fetch(`/api/scrape-photo?url=${encodeURIComponent(url)}`).catch(() => null),
+    ]);
     const webContent = await jinaResponse.text();
 
     console.log('Webpage content length:', webContent.length);
@@ -229,6 +232,14 @@ export const generateAdvisorFromURL = async (url, language = 'zh') => {
     if (webContent.length < 100) {
       throw new Error('网页内容太短，可能是无效的URL或网页无法访问');
     }
+
+    // Append scraped image URLs so the AI can select the best profile photo
+    const scrapeData = scrapeResponse?.ok ? await scrapeResponse.json() : { imgs: [] };
+    const imgListText = scrapeData.imgs.length > 0
+      ? `\n\nImages found on the page (pick the most likely personal headshot for photo_url):\n${scrapeData.imgs.slice(0, 20).map((u, i) => `${i + 1}. ${u}`).join('\n')}`
+      : '';
+
+    console.log('Scraped image count:', scrapeData.imgs.length);
 
     // Step 2: Extract structured advisor info from the page content
     const systemPrompt = language === 'zh'
@@ -239,7 +250,7 @@ export const generateAdvisorFromURL = async (url, language = 'zh') => {
 2. 提取性格特征（从文字风格、研究描述等推断）
 3. 推断实验室风格和对学生的期待
 4. 如果找不到某些信息，用合理的推测填充
-5. 提取导师的头像图片URL（在网页内容中找到最可能是个人照片的图片链接），找不到则设为null
+5. 从末尾提供的图片URL列表中选择最可能是个人照片的URL填入photo_url，找不到则设为null
 6. 必须返回有效的JSON格式
 
 返回格式示例：
@@ -263,7 +274,7 @@ Requirements:
 2. Infer personality traits from writing style and research descriptions
 3. Infer lab style and expectations for students
 4. Use reasonable assumptions for missing information
-5. Extract the advisor's profile photo URL (the image most likely to be a personal headshot); set to null if not found
+5. From the image URL list provided at the end, pick the one most likely to be a personal headshot for photo_url; set to null if none found
 6. Must return valid JSON format
 
 Return format example:
@@ -285,7 +296,7 @@ Return format example:
     const data = await callAI(
       [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `网页内容：\n\n${webContent.slice(0, 10000)}` }
+        { role: 'user', content: `网页内容：\n\n${webContent.slice(0, 9000)}${imgListText}` }
       ],
       { temperature: 0.7, response_format: { type: 'json_object' } }
     );
@@ -301,6 +312,15 @@ Return format example:
 
     if (missingFields.length > 0) {
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+    // Resolve relative photo_url (e.g. "/assets/img/photo.jpg") against the input URL
+    if (advisorProfile.photo_url) {
+      try {
+        advisorProfile.photo_url = new URL(advisorProfile.photo_url, url).href;
+      } catch {
+        advisorProfile.photo_url = null;
+      }
     }
 
     console.log('Generated advisor profile:', advisorProfile);
