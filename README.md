@@ -8,6 +8,17 @@ A simulation game that lets you practice a PhD advisor interview before committi
 
 ---
 
+## What You Can Do
+
+- **Generate an advisor from text or a real professor's homepage URL** — describe the advisor you want, or paste a faculty page and let the app extract their profile automatically
+- **See a cartoon avatar** generated from the professor's actual photo
+- **Have a 7-round scored interview** — your answers affect a live satisfaction meter, and the advisor's expression changes with their mood
+- **Use text or voice** — type your answers or speak them out loud; the advisor can speak back too
+- **Get a final verdict** — offer or rejection, with a short explanation
+- **Download the full record** — save the conversation, scores, and audio as a local file
+
+---
+
 ## How It Works
 
 ### 1. Describe Your Advisor
@@ -75,16 +86,6 @@ Download a full PDF-style record of the interview — including the advisor's pr
 
 ---
 
-## Features
-
-- **Generate from a real homepage** — paste any professor's faculty page URL and the app scrapes their info automatically
-- **AI cartoon avatar** — generates a Notion-style illustration from the professor's photo
-- **7-round scored interview** — each answer affects a satisfaction meter from 0–100
-- **Text and voice modes** — type or speak your answers; the advisor can speak back
-- **Downloadable record** — save the full conversation with audio as a local HTML file
-- **Chinese / English** — full bilingual support
-
----
 
 ## Tech Stack
 

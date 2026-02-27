@@ -28,7 +28,7 @@ export const translations = {
     statusOnline: "ONLINE"
   },
 
-    footer: "▶ PRESS START TO BEGIN YOUR JOURNEY ◀",
+    footer: "",
     
     // 动画文字
     animations: {
@@ -200,7 +200,7 @@ export const translations = {
       statusOnline: "ONLINE"
     },
 
-    footer: "▶ PRESS START TO BEGIN YOUR JOURNEY ◀",
+    footer: "",
 
     // 动画文字
     animations: {
